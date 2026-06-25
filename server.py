@@ -76,6 +76,8 @@ DEFAULT_STATE = {
         'currentView': 'digest',
         'currentCat': 'all',
         'digestCat': 'all',
+        # Client display preference: show per-story ranking score chips. Opt-in.
+        'showScores': False,
     },
     # Per-source interaction counters used by client-side ranking. Persists
     # independently of readIds/later/history so the user's inbox hygiene
