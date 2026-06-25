@@ -1,0 +1,31 @@
+name: Feature request
+description: Suggest an idea or improvement.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cruxwire is a personal project shared as-is - ideas are welcome, but please skim
+        [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md): there's no SLA, and changes that don't fit the
+        direction (or that add dependencies) may be declined.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem / use case
+      description: What are you trying to do, and where does the app fall short today?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Proposed solution
+      description: What you'd like to see. Sketches or examples welcome.
+    validations:
+      required: false
+  - type: checkboxes
+    id: fit
+    attributes:
+      label: Fit
+      options:
+        - label: This keeps Cruxwire dependency-free and local-first (no cloud services, no pip/npm deps).
+          required: false

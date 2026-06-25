@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Byte-compile the Python modules
+        run: python -m py_compile server.py pipeline.py settings.py
+      - name: Validate the seed JSON
+        run: |
+          python - <<'PY'
+          import json
+          for f in ("feeds.sample.json", "categories.sample.json"):
+              json.load(open(f))
+              print(f, "ok")
+          PY
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the container image
+        run: docker build -t cruxwire:ci .

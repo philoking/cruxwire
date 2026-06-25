@@ -1,0 +1,26 @@
+services:
+  cruxwire:
+    build: .
+    container_name: cruxwire
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8090}:8090"
+    environment:
+      # Infrastructure wiring lives here in compose (not buried in .env).
+      # Point this at your Ollama server. Which models to use is configured
+      # in the app's Settings → Models, not here.
+      #
+      # Running Ollama natively on the SAME machine via Docker Desktop (Mac/Win)?
+      # Use host.docker.internal - inside the container `localhost` is the
+      # container, not your host:
+      #     OLLAMA_HOST: http://host.docker.internal:11434
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://localhost:11434}
+      PORT: 8090
+    volumes:
+      - cruxwire-data:/data        # local named volume - no NAS share
+    env_file:
+      - path: .env                  # optional: extra overrides
+        required: false
+
+volumes:
+  cruxwire-data:

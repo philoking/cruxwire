@@ -1,0 +1,38 @@
+[
+  {
+    "key": "tech",
+    "label": "Tech",
+    "color": "#2b7fff",
+    "interest": "Technology -- hardware, software, gadgets, and the companies and industry behind them"
+  },
+  {
+    "key": "ai",
+    "label": "AI",
+    "color": "#7b5cff",
+    "interest": "AI and machine learning -- new models, research, tools, and how they are being applied"
+  },
+  {
+    "key": "science",
+    "label": "Science",
+    "color": "#10b981",
+    "interest": "Science -- research, discoveries, space, health, and the natural world"
+  },
+  {
+    "key": "business",
+    "label": "Business",
+    "color": "#d98a3b",
+    "interest": "Business and the economy -- companies, startups, markets, and tech-industry moves"
+  },
+  {
+    "key": "world",
+    "label": "World",
+    "color": "#06b6d4",
+    "interest": "World news -- significant global events and current affairs"
+  },
+  {
+    "key": "gaming",
+    "label": "Gaming",
+    "color": "#ff5a3c",
+    "interest": "Video games -- releases, the industry, hardware, and gaming culture"
+  }
+]

@@ -1,0 +1,21 @@
+# Runtime data (generated; lives on the /data volume in production)
+/data/
+state.json
+digest.json
+feeds.json
+settings.json
+categories.json
+runs.json
+embeddings.json
+
+# Local environment / secrets - never commit
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Editor / OS / agent
+.claude/
+.DS_Store
+.vscode/

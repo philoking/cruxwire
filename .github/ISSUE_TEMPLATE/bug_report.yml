@@ -1,0 +1,40 @@
+name: Bug report
+description: Something isn't working as expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. **Please don't paste secrets, tokens, or internal hostnames/IPs.**
+        For security issues, use the private advisory instead (see the chooser / SECURITY.md).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what actually happened.
+      placeholder: Steps to reproduce, plus expected vs. actual behaviour.
+    validations:
+      required: true
+  - type: input
+    id: deploy
+    attributes:
+      label: How are you running it?
+      placeholder: e.g. Docker on a homelab box / Docker Desktop on macOS / `python server.py` on Linux
+    validations:
+      required: true
+  - type: input
+    id: ollama
+    attributes:
+      label: Ollama setup
+      description: Models in use and where Ollama runs.
+      placeholder: e.g. qwen2.5:latest + nomic-embed-text, Ollama native on the same Mac (host.docker.internal)
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: "Container logs (`docker logs cruxwire`) or console output. Redact anything sensitive."
+      render: shell
+    validations:
+      required: false

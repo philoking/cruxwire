@@ -1,0 +1,3316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cruxwire</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+
+    /* ── Variables (Magazine theme) ────────────────────── */
+    :root {
+      color-scheme: light;
+      --brand:     #e8482b;
+      --bg:        #f7f5f0;
+      --surface:   #ffffff;
+      --surface2:  #f0ede6;
+      --border:    #e6e1d8;
+      --border2:   #d8d2c6;
+      --text:      #15120d;
+      --text2:     #5d5a52;
+      --text3:     #908c83;
+      --font-head: 'Space Grotesk', system-ui, sans-serif;
+      --font-body: 'Inter', system-ui, sans-serif;
+      --radius:    8px;
+      --radius-lg: 12px;
+      --later-hover: var(--brand);
+      --shadow:       0 1px 2px rgba(20,16,10,.04), 0 8px 24px rgba(20,16,10,.06);
+      --shadow-hover: 0 2px 6px rgba(20,16,10,.06), 0 18px 40px rgba(20,16,10,.13);
+    }
+
+    :root.dark {
+      color-scheme: dark;
+      --bg:        #0b0c0e;
+      --surface:   #15171b;
+      --surface2:  #1d2026;
+      --border:    rgba(255,255,255,0.08);
+      --border2:   rgba(255,255,255,0.16);
+      --text:      #f2f0ec;
+      --text2:     #aaa79f;
+      --text3:     #74716a;
+      --shadow:       0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
+      --shadow-hover: 0 2px 8px rgba(0,0,0,.5), 0 22px 48px rgba(0,0,0,.55);
+    }
+
+    /* Category accents — same on both themes */
+    :root {
+      --c-ai:#7b5cff; --c-tech:#2b7fff; --c-gaming:#ff5a3c; --c-music:#10b981;
+      --c-woodworking:#d98a3b; --c-photography:#e84d9c; --c-devtools:#3fae46;
+      --c-pm:#8a90a0; --c-productivity:#06b6d4;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+    a { color: inherit; text-decoration: none; }
+    a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    button { font-family: var(--font-body); cursor: pointer; }
+    img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+    /* ── Layout ─────────────────────────────────────────── */
+    .page { max-width: 1240px; margin: 0 auto; padding: 0 28px 80px; }
+
+    /* ── Header / masthead ──────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 26px 0 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .masthead {
+      font-family: var(--font-head);
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+    .masthead .brand-logo {
+      width: 34px; height: 34px; flex-shrink: 0;
+      object-fit: contain; margin-left: -4px;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-meta {
+      font-size: 11px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 600;
+    }
+    .hdr-btn {
+      background: transparent;
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      padding: 5px 15px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text2);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .hdr-btn:hover { color: var(--text); border-color: var(--text3); background: var(--surface2); }
+    /* Pipeline run pill: shows "Updating…" while a run is active, then becomes
+       a clickable "N new stories — refresh" affordance when a fresh digest lands. */
+    .run-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 500; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border2); background: transparent; color: var(--text2); cursor: default; font-family: var(--font-body); letter-spacing: 0.02em; }
+    .run-pill.running { color: var(--text3); }
+    .run-pill.ready { color: #7eb52a; border-color: rgba(126,181,42,0.5); cursor: pointer; }
+    .run-pill.ready:hover { background: rgba(126,181,42,0.08); }
+    .run-spinner { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--border2); border-top-color: var(--text2); animation: sync-spin 0.7s linear infinite; }
+    .sync-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+    }
+    .sync-status[data-state="error"] {
+      color: #f4a261;
+      border: 1px solid rgba(244, 162, 97, 0.5);
+      background: rgba(244, 162, 97, 0.08);
+    }
+    .sync-status[data-state="error"]::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #f4a261;
+      animation: sync-pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes sync-pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+    /* ── View nav ───────────────────────────────────────── */
+    .viewnav {
+      display: flex;
+      gap: 26px;
+      padding-top: 14px;
+    }
+    .viewnav-tab {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 8px 0;
+      font-family: var(--font-head);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text3);
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .viewnav-tab:hover { color: var(--text2); }
+    .viewnav-tab.active { color: var(--text); border-bottom-color: var(--brand); }
+    .viewnav-tab .vbadge {
+      font-size: 11px;
+      margin-left: 5px;
+      vertical-align: 1px;
+      color: var(--text3);
+      font-weight: 500;
+    }
+    .viewnav-tab.active .vbadge { color: var(--text2); }
+
+    /* ── Category nav ───────────────────────────────────── */
+    .catbar {
+      display: flex;
+      gap: 8px;
+      padding: 18px 0 28px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .catbar::-webkit-scrollbar { display: none; }
+    .cattab {
+      display: inline-flex;
+      align-items: center;
+      background: transparent;
+      border: 1px solid var(--border2);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text2);
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .cattab:hover { color: var(--text); border-color: var(--text3); }
+    .cattab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .cat-dot { width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; flex-shrink: 0; }
+    .cattab .badge {
+      display: inline-block;
+      color: inherit;
+      opacity: 0.6;
+      font-size: 11px;
+      margin-left: 5px;
+      vertical-align: 1px;
+    }
+
+    /* ── Views ──────────────────────────────────────────── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── Main digest grid ───────────────────────────────── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 32px;
+      margin-top: 28px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .sidebar { order: -1; }
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 14px;
+    }
+
+    .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+    /* ── Thumbnail (image with category-tinted fallback) ── */
+    .thumb { position: relative; width: 100%; border-radius: var(--radius-lg); overflow: hidden; background: var(--surface2); }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s cubic-bezier(.2,.7,.2,1); }
+    .card:hover .thumb img, .lead:hover .thumb img, .mini:hover .thumb img { transform: scale(1.045); }
+    .thumb .ph { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-head); font-weight: 700; color: #fff; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; opacity: .92; padding: 8px; text-align: center; }
+    /* Rollup count badge on the image — "+2" means 2 duplicates folded in. */
+    .thumb-badge { position: absolute; top: 9px; left: 9px; display: inline-flex; align-items: center; background: rgba(15,14,12,.82); color: #fff; font-family: var(--font-head); font-weight: 700; font-size: 12.5px; letter-spacing: .01em; padding: 3px 10px; border-radius: 999px; backdrop-filter: blur(3px); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+
+    /* ── Kicker + meta line ── */
+    .kicker { display: inline-flex; align-items: center; gap: 7px; flex-wrap: wrap; font-family: var(--font-head); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; }
+    .kicker .cdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .meta-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    .src { font-size: 12px; color: var(--text2); font-weight: 500; }
+    .src time { color: var(--text3); }
+
+    /* ── Card actions (always visible; quiet — touch-first) ── */
+    .card-actions { display: flex; gap: 16px; margin-top: 12px; }
+    .act { background: none; border: none; padding: 4px 0; font-family: var(--font-body); font-size: 12.5px; font-weight: 600; color: var(--text3); cursor: pointer; transition: color .15s; -webkit-tap-highlight-color: transparent; }
+    .act:hover { color: var(--text); }
+    .act:active { color: var(--text); }
+    .act.later:hover, .act.later:active { color: var(--later-hover); }
+
+    /* ── Section label (with trailing rule) ── */
+    .sec-label { font-family: var(--font-head); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--text); display: flex; align-items: center; gap: 10px; margin: 4px 0 18px; }
+    .sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── Score dot ──────────────────────────────────────── */
+    .score-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── Buttons ────────────────────────────────────────── */
+    .btn-dismiss {
+      background: transparent;
+      border: 1px solid var(--text3);
+      border-radius: var(--radius);
+      color: var(--text3);
+      font-size: 11px;
+      padding: 3px 10px;
+      transition: color 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-dismiss:hover { color: var(--text); border-color: var(--text3); }
+
+    .btn-later {
+      background: transparent;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      color: var(--text3);
+      font-size: 11px;
+      padding: 3px 10px;
+      transition: color 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-later:hover { color: var(--later-hover); border-color: var(--later-hover); }
+
+    /* ── Hero band: lead + secondary stack ──────────────── */
+    .hero { display: grid; grid-template-columns: 1.55fr 1fr; gap: 38px; padding-bottom: 34px; border-bottom: 1px solid var(--border); align-items: start; }
+    @media (max-width: 860px) { .hero { grid-template-columns: 1fr; gap: 30px; } }
+    .lead { display: flex; flex-direction: column; }
+    .lead .thumb { aspect-ratio: 16/9; margin-bottom: 15px; }
+    .lead .kicker { margin-bottom: 10px; }
+    .lead-title { font-family: var(--font-head); font-weight: 700; font-size: 31px; line-height: 1.1; letter-spacing: -0.025em; margin-bottom: 11px; }
+    .lead:hover .lead-title { color: var(--brand); }
+    .lead-summary { font-size: 15px; color: var(--text2); line-height: 1.55; max-width: 60ch; margin-bottom: 13px; }
+    .lead-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+    .hero-side { display: flex; flex-direction: column; gap: 16px; }
+    .mini { display: grid; grid-template-columns: 116px 1fr; gap: 14px; align-items: start; }
+    .mini .thumb { aspect-ratio: 1/1; }
+    .mini .kicker { font-size: 10px; margin-bottom: 6px; }
+    .mini-title { font-family: var(--font-head); font-weight: 600; font-size: 15.5px; line-height: 1.2; letter-spacing: -0.015em; margin-bottom: 7px; }
+    .mini:hover .mini-title { color: var(--brand); }
+    .mini-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+    /* ── Two-column region: Latest grid + Earlier rail ──── */
+    .cols { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 46px; align-items: start; margin-top: 30px; }
+    @media (max-width: 900px) { .cols { grid-template-columns: 1fr; gap: 34px; } }
+    .main-col, .rail-col { min-width: 0; }
+    @media (min-width: 901px) { .rail-col { border-left: 1px solid var(--border); padding-left: 30px; } }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(248px,1fr)); gap: 30px 26px; }
+    .card { display: flex; flex-direction: column; }
+    .card .thumb { aspect-ratio: 16/10; margin-bottom: 13px; }
+    .card .kicker { margin-bottom: 9px; }
+    .card-title { font-family: var(--font-head); font-weight: 600; font-size: 18.5px; line-height: 1.2; letter-spacing: -0.018em; margin-bottom: 8px; }
+    .card:hover .card-title { color: var(--brand); }
+    .card-summary { font-size: 13.5px; color: var(--text2); line-height: 1.5; margin-bottom: 11px; }
+    .card-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 2px; }
+
+    /* ── Earlier rail (right column) ────────────────────── */
+    .rail-day { font-family: var(--font-head); font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; padding: 16px 0 4px; }
+    .rail-item { display: block; padding: 11px 0; border-bottom: 1px solid var(--border); }
+    .rail-item:last-child { border-bottom: none; }
+    .rail-title { font-family: var(--font-head); font-weight: 600; font-size: 14.5px; line-height: 1.25; letter-spacing: -0.01em; }
+    .rail-item:hover .rail-title { color: var(--brand); }
+    .rail-meta { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
+    .rail-meta .cdot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .rail-meta span { font-size: 11.5px; color: var(--text3); }
+    .rail-actions { display: flex; gap: 14px; margin-top: 7px; }
+    .rail-all { display: inline-block; margin-top: 14px; font-family: var(--font-head); font-weight: 600; font-size: 12.5px; color: var(--brand); }
+    .rail-more { display: block; width: 100%; margin-top: 16px; padding: 9px 0; background: none; border: 1px solid var(--border2); border-radius: 8px; font-family: var(--font-head); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--text3); cursor: pointer; transition: color .15s, border-color .15s; -webkit-tap-highlight-color: transparent; }
+    .rail-more:hover { color: var(--text); border-color: var(--text3); }
+
+    /* ── Collapsed-articles disclosure (expand to see duplicates) ── */
+    .cluster-more { margin-top: 10px; }
+    .cluster-more > summary {
+      list-style: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--brand);
+      font-family: var(--font-head);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      padding: 5px 12px;
+      border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--brand) 8%, var(--surface));
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cluster-more > summary:hover { background: color-mix(in srgb, var(--brand) 16%, var(--surface)); }
+    .cluster-more > summary::-webkit-details-marker { display: none; }
+    .cluster-more > summary::after { content: '▾'; font-size: 10px; }
+    .cluster-more[open] > summary::after { content: '▴'; }
+    .cluster-list { list-style: none; margin: 12px 0 2px; padding: 12px 0 0; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
+    .cluster-list li { display: flex; flex-direction: column; gap: 3px; line-height: 1.3; }
+    .cluster-src { font-family: var(--font-head); font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
+    .cluster-list a { color: var(--text); font-weight: 500; font-size: 13.5px; line-height: 1.3; }
+    .cluster-list a:hover { color: var(--brand); }
+    .cluster-ext { color: var(--text3); }
+    .cluster-ext { color: var(--text3); }
+
+
+    /* ── History and Later shared list styles ───────────── */
+    .list-view { max-width: 800px; margin-top: 28px; }
+    .list-meta { font-size: 12px; color: var(--text3); margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .list-clear { background: transparent; border: 1px solid var(--border2); border-radius: 20px; padding: 3px 12px; font-size: 11px; color: var(--text3); cursor: pointer; font-family: var(--font-body); }
+    .list-clear:hover { color: var(--text); border-color: var(--text3); }
+
+    .list-search {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 13px;
+      padding: 8px 12px;
+      margin-bottom: 14px;
+      box-sizing: border-box;
+    }
+    /* Search lives at the right end of the view-nav row, Home only. */
+    .viewnav-search { margin-left: auto; align-self: center; width: 220px; max-width: 40vw; margin-bottom: 0; }
+    /* Read Later matches, highlighted at the top of search results. */
+    .saved-hit { background: color-mix(in srgb, var(--later-hover) 9%, transparent); border-radius: var(--radius); padding: 12px; }
+    .saved-tag { display: inline-flex; align-items: center; gap: 5px; margin-bottom: 8px;
+      font-family: var(--font-head); font-weight: 700; font-size: 10px; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--later-hover); }
+
+    /* ── Settings view ──────────────────────────────────── */
+    .settings-section { margin-bottom: 32px; }
+    .settings-h { font-size: 13px; font-weight: 600; color: var(--text); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
+    .settings-help { font-size: 13px; color: var(--text2); margin-bottom: 14px; line-height: 1.5; }
+
+    .feed-form { display: grid; gap: 10px; max-width: 560px; margin-bottom: 18px; }
+    .feed-form-row { display: flex; gap: 8px; align-items: center; }
+    .feed-input, .feed-select { background: transparent; border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); padding: 8px 12px; font-size: 13px; font-family: var(--font-body); box-sizing: border-box; }
+    .feed-input { flex: 1; min-width: 0; }
+    .feed-select { min-width: 140px; }
+    .feed-input::placeholder { color: var(--text3); }
+    .feed-input:focus, .feed-select:focus { outline: none; border-color: var(--text2); }
+    /* Native dropdown popovers render <option> with system colors by default —
+       this forces our theme colors so dark mode doesn't get light text on white. */
+    .feed-select option { background: var(--surface); color: var(--text); }
+    .feed-btn { background: transparent; border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); padding: 8px 14px; font-size: 13px; cursor: pointer; font-family: var(--font-body); white-space: nowrap; }
+    .feed-btn:hover:not(:disabled) { border-color: var(--text2); }
+    .feed-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .feed-btn.primary { color: #7eb52a; border-color: rgba(126,181,42,0.4); }
+    .feed-btn.primary:hover:not(:disabled) { border-color: #7eb52a; }
+    .feed-status { font-size: 12px; min-height: 16px; }
+    .feed-status.ok { color: #7eb52a; }
+    .feed-status.err { color: #d49531; }
+    .feed-status.muted { color: var(--text2); }
+
+    /* ── Config controls (Settings) ─────────────────────── */
+    .cfg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 28px; max-width: 640px; margin-bottom: 14px; }
+    @media (max-width: 640px) { .cfg-grid { grid-template-columns: 1fr; } }
+    .cfg-row { display: flex; flex-direction: column; gap: 6px; }
+    .cfg-label { font-size: 12px; font-weight: 500; color: var(--text); display: flex; flex-direction: column; gap: 3px; }
+    .cfg-help { font-size: 11px; font-weight: 400; color: var(--text3); line-height: 1.4; }
+    .cfg-input { background: transparent; border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); padding: 7px 10px; font-size: 13px; font-family: var(--font-body); width: 130px; }
+    .cfg-input.wide { width: 100%; max-width: 280px; }
+    .cfg-input:focus { outline: none; border-color: var(--text2); }
+    .cfg-select { background: transparent; border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); padding: 7px 10px; font-size: 13px; font-family: var(--font-body); width: 100%; max-width: 280px; }
+    .cfg-select:focus { outline: none; border-color: var(--text2); }
+    .cfg-select option { background: var(--surface); color: var(--text); }
+
+    /* Settings sub-tabs */
+    .subtabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border2); margin-bottom: 26px; flex-wrap: wrap; }
+    .subtab { background: transparent; border: none; border-bottom: 2px solid transparent; padding: 8px 16px; font-size: 13px; font-weight: 500; color: var(--text3); cursor: pointer; margin-bottom: -1px; transition: color 0.15s, border-color 0.15s; }
+    .subtab:hover { color: var(--text2); }
+    .subtab.active { color: var(--text); border-bottom-color: var(--text); }
+    .cfg-actions { display: flex; align-items: center; gap: 12px; }
+    .cfg-status { font-size: 12px; min-height: 16px; }
+    .cfg-status.ok { color: #7eb52a; }
+    .cfg-status.err { color: #d49531; }
+    .cfg-status.muted { color: var(--text2); }
+    /* Category editor */
+    .cat-list { display: flex; flex-direction: column; gap: 12px; margin: 14px 0 16px; }
+    .cat-row { display: flex; align-items: flex-start; gap: 10px; }
+    .cat-move-col { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; padding-top: 1px; }
+    .cat-move { background: none; border: 1px solid var(--border2); border-radius: 5px; color: var(--text3); width: 24px; height: 19px; cursor: pointer; line-height: 1; font-size: 10px; -webkit-tap-highlight-color: transparent; }
+    .cat-move:hover:not(:disabled) { color: var(--text); border-color: var(--text3); }
+    .cat-move:disabled { opacity: .3; cursor: default; }
+    .cat-color { width: 40px; height: 40px; padding: 2px; border: 1px solid var(--border2); border-radius: 7px; background: none; cursor: pointer; flex-shrink: 0; }
+    .cat-fields { flex: 1; display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+    .cat-row-top { display: flex; gap: 8px; align-items: center; }
+    .cat-input { background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 7px 9px; font: inherit; font-size: 13px; color: var(--text); }
+    .cat-input::placeholder { color: var(--text3); }
+    .cat-input:focus { outline: none; border-color: var(--text3); }
+    .cat-label { flex: 1; min-width: 0; }
+    .cat-key { width: 120px; flex-shrink: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+    .cat-interest { width: 100%; }
+    .cat-del { background: none; border: none; color: var(--text3); font-size: 15px; cursor: pointer; padding: 4px 6px; flex-shrink: 0; line-height: 1; -webkit-tap-highlight-color: transparent; }
+    .cat-del:hover { color: #e06a5e; }
+    .cfg-empty { font-size: 12px; color: var(--text3); font-style: italic; }
+    .kw-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .kw-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 20px; padding: 4px 6px 4px 12px; font-size: 12px; color: var(--text); }
+    .kw-chip-x { background: transparent; border: none; color: var(--text3); font-size: 16px; line-height: 1; cursor: pointer; padding: 0 4px; }
+    .kw-chip-x:hover { color: #c0392b; }
+
+    /* OPML import wizard (modal) */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(10,9,8,.55); display: grid; place-items: center; z-index: 1000; padding: 24px; }
+    .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg); width: 100%; max-width: 560px; max-height: 85vh; overflow: auto; padding: 22px 22px 18px; box-shadow: var(--shadow-hover); }
+    .modal-h { font-family: var(--font-head); font-weight: 700; font-size: 18px; margin-bottom: 6px; }
+    .modal-help { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 18px; }
+    .opml-groups { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .opml-group { display: flex; align-items: center; gap: 12px; }
+    .opml-group-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .opml-count { font-size: 11px; color: var(--text3); background: var(--surface2); border-radius: 10px; padding: 1px 7px; flex-shrink: 0; }
+    .opml-group .cfg-select { max-width: 240px; flex-shrink: 0; }
+    .opml-validate { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text2); margin-bottom: 18px; }
+    .modal-actions { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+    .modal-actions .cfg-status { margin-right: auto; }
+    .opml-summary { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 12px; }
+    .opml-fail-list { max-height: 220px; overflow: auto; border-top: 1px solid var(--border); padding-top: 10px; margin-bottom: 14px; }
+    .opml-fail { font-size: 12.5px; color: var(--text2); padding: 3px 0; }
+    .opml-fail span { color: var(--text); font-weight: 500; }
+    /* Quiet OPML import/export footer (occasional action) */
+    .opml-bar { margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 12.5px; color: var(--text3); display: flex; align-items: center; gap: 6px; }
+    .linklike { background: none; border: none; padding: 0; font-family: var(--font-body); font-size: 12.5px; color: var(--text2); cursor: pointer; }
+    .linklike:hover { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
+    .feed-cell-name { font-weight: 500; color: var(--text); }
+    a.feed-site-link { text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+    a.feed-site-link:hover { color: var(--brand); text-decoration: underline; }
+    a.feed-site-link .ext { font-size: 10px; color: var(--text3); }
+    .feed-cell-url { font-size: 11px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; margin-top: 2px; }
+    .stats-table td.actions { text-align: right; padding-right: 0; }
+    /* Runs log */
+    .runs-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .run-summary { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
+    .run-fail-note { color: #e06a5e; font-weight: 600; }
+    .run-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 20px; letter-spacing: .02em; white-space: nowrap; }
+    .run-badge.ok { color: #7eb52a; background: rgba(126,181,42,.12); }
+    .run-badge.fail { color: #e06a5e; background: rgba(224,106,94,.14); }
+    .run-badge.empty { color: var(--text3); background: var(--border); }
+    .run-badge.running { color: var(--text2); background: var(--border2); }
+    .run-err { font-size: 11px; color: #e06a5e; margin-top: 4px; max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .run-live td { opacity: .8; }
+    .run-banner { font-size: 12.5px; font-weight: 500; padding: 9px 12px; border-radius: 8px; margin-bottom: 12px; }
+    .run-banner.ok { color: #7eb52a; background: rgba(126,181,42,.10); }
+    .run-banner.warn { color: #d49531; background: rgba(212,149,49,.12); }
+    .run-banner.bad { color: #e06a5e; background: rgba(224,106,94,.14); }
+    .run-ollama { font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .run-ollama.ok { color: var(--text2); }
+    .run-ollama.warn { color: #d49531; }
+    .run-ollama.bad { color: #e06a5e; }
+    .run-ollama.na { color: var(--text3); }
+    .stats-table tr.ghost-row td { opacity: 0.55; }
+    .ghost-tag { font-size: 10px; color: var(--text2); font-style: italic; text-transform: uppercase; letter-spacing: 0.05em; }
+    .cat-dash { color: var(--text3); }
+    .stats-table td .list-btn { padding: 3px 10px; font-size: 11px; }
+    .stats-table th.sortable { cursor: pointer; user-select: none; }
+    .stats-table th.sortable:hover { color: var(--text); }
+    .stats-table th.sortable.active { color: var(--text); }
+    .sort-arrow { display: inline-block; margin-left: 4px; font-size: 9px; opacity: 0.7; }
+    .settings-h-count { font-size: 12px; color: var(--text2); font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 10px; }
+
+    .recent-removes { margin-top: 16px; padding: 12px 14px; border: 1px dashed var(--border2); border-radius: var(--radius); }
+    .recent-removes-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .recent-removes-items { display: flex; flex-wrap: wrap; gap: 8px; }
+    .recent-remove-pill { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border: 1px solid var(--border2); border-radius: 20px; font-size: 12px; }
+    .recent-remove-name { color: var(--text); }
+    .recent-remove-undo { background: transparent; border: none; color: var(--later-hover); font-size: 12px; cursor: pointer; padding: 0; font-family: var(--font-body); }
+    .recent-remove-undo:hover { text-decoration: underline; }
+    .stats-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .stats-table th { text-align: left; font-weight: 500; color: var(--text2); padding: 8px 12px; border-bottom: 1px solid var(--border2); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stats-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+    .stats-table th.num, .stats-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .stats-table tbody tr:hover { background: var(--border); }
+    .stats-table td.aff-up { color: #7eb52a; font-weight: 500; }
+    .stats-table td.aff-down { color: #d49531; font-weight: 500; }
+    .stats-table td.aff-neutral { color: var(--text2); }
+    /* Subdue only the numeric cells when there's no activity — source name
+       stays readable so the user can scan inactive feeds for pruning. */
+    .stats-table td.zero { color: var(--text3); }
+    .stats-empty-row td { color: var(--text2); font-style: italic; text-align: center; padding: 24px 0; }
+    .list-search::placeholder { color: var(--text3); }
+    .list-search:focus { outline: none; border-color: var(--text2); }
+    .search-empty { font-size: 13px; color: var(--text3); padding: 32px 0; text-align: center; font-style: italic; display: none; }
+
+    .list-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      transition: opacity 0.25s ease;
+    }
+    .list-main { flex: 1; }
+    .list-source { font-size: 10px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 3px; }
+    .list-title { font-size: 15px; font-weight: 500; line-height: 1.4; margin-bottom: 4px; }
+    .list-title a { color: var(--text); text-decoration: none; }
+    .list-title a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .list-url { font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 500px; }
+    .list-time { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .tldr-toggle { color: var(--brand) !important; }
+    .tldr-panel { position: relative; margin-top: 11px; padding: 11px 36px 11px 14px; background: var(--surface2); border-radius: 8px; max-width: 620px; }
+    .tldr-list { margin: 0; padding-left: 18px; }
+    .tldr-list li { font-size: 13px; line-height: 1.5; color: var(--text); margin-bottom: 5px; }
+    .tldr-list li:last-child { margin-bottom: 0; }
+    .tldr-bottom { font-size: 13px; line-height: 1.5; color: var(--text2); margin: 9px 0 0; }
+    .tldr-bottom span { color: var(--text); font-weight: 600; }
+    .tldr-status { font-size: 12.5px; color: var(--text2); margin: 0; }
+    .tldr-regen-icon { position: absolute; top: 7px; right: 8px; background: none; border: none; color: var(--text3); font-size: 15px; line-height: 1; cursor: pointer; padding: 3px; border-radius: 5px; -webkit-tap-highlight-color: transparent; transition: color .15s; }
+    .tldr-regen-icon:hover { color: var(--brand); }
+
+    .list-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+    .list-btn {
+      background: transparent;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      color: var(--text3);
+      font-size: 11px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-family: var(--font-body);
+      white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+      text-align: center;
+    }
+    .list-btn:hover { color: var(--text); border-color: var(--text3); }
+    .list-btn.copied { color: #639922; border-color: #639922; }
+    .list-btn.remove:hover { color: #c0392b; border-color: #c0392b; }
+
+    /* ── Empty states ───────────────────────────────────── */
+    .empty { font-size: 13px; color: var(--text3); padding: 60px 0; text-align: center; }
+
+    /* ── Loading ────────────────────────────────────────── */
+    .status-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; gap: 12px; color: var(--text3); font-size: 14px; }
+
+    /* Hide page chrome until initial sync completes */
+    .page.not-ready .viewnav,
+    .page.not-ready .catbar,
+    .page.not-ready .view { display: none; }
+
+    .sync-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text2); min-width: 200px; }
+    .sync-icon { width: 12px; height: 12px; flex-shrink: 0; border-radius: 50%; }
+    .sync-icon.loading {
+      border: 1.5px solid var(--border2);
+      border-top-color: var(--text);
+      animation: sync-spin 0.7s linear infinite;
+    }
+    .sync-row.done .sync-icon { background: #639922; border: none; animation: none; }
+    .sync-row.done { color: var(--text3); }
+    @keyframes sync-spin { to { transform: rotate(360deg); } }
+
+    /* ── Fade out ───────────────────────────────────────── */
+    .article-wrap { transition: opacity 0.25s ease; }
+    /* A triaged card fades out but keeps its box, so dismissing/saving never
+       moves anything else. The layout only re-flows on the next visit. */
+    .article-wrap.removed { opacity: 0; pointer-events: none; }
+
+  </style>
+</head>
+<body>
+<div class="page not-ready">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="masthead"><img class="brand-logo" src="/logo-mark.png" alt="" width="34" height="34">Cruxwire<span id="header-date" style="color:var(--text2);font-weight:500;font-size:14px;font-family:var(--font-body);letter-spacing:0;"></span></div>
+    <div class="header-right">
+      <div class="header-meta" id="header-count"></div>
+      <button class="run-pill" id="run-pill" style="display:none;"></button>
+      <span class="sync-status" id="sync-status" data-state="idle" style="display:none;"></span>
+      <button class="hdr-btn" id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark">◐</button>
+    </div>
+  </header>
+
+  <!-- View nav -->
+  <nav class="viewnav">
+    <button class="viewnav-tab active" onclick="switchView('digest')" id="vnav-digest">
+      Home <span class="vbadge" id="badge-digest"></span>
+    </button>
+    <button class="viewnav-tab" onclick="switchView('later')" id="vnav-later">
+      Read Later <span class="vbadge" id="badge-later"></span>
+    </button>
+    <button class="viewnav-tab" onclick="switchView('history')" id="vnav-history">
+      History <span class="vbadge" id="badge-history"></span>
+    </button>
+    <button class="viewnav-tab" onclick="switchView('settings')" id="vnav-settings">
+      Settings
+    </button>
+    <input type="search" id="digest-search" class="list-search viewnav-search"
+           placeholder="Search stories…" aria-label="Search stories by topic"
+           oninput="onDigestSearchInput(this.value)">
+  </nav>
+
+  <!-- Category nav (shown in all views) -->
+  <nav class="catbar" id="catbar" aria-label="Filter by category"></nav>
+
+  <!-- Loading -->
+  <div class="status-screen" id="status-screen">
+    <div class="sync-row" id="sync-digest"><span class="sync-icon loading"></span><span>Syncing latest stories</span></div>
+    <div class="sync-row" id="sync-state"><span class="sync-icon loading"></span><span>Syncing read state</span></div>
+  </div>
+
+  <!-- ── Digest view ── -->
+  <div class="view active" id="view-digest">
+    <section id="search-results" class="list-view" style="display:none;"></section>
+    <div id="digest-magazine">
+      <section id="section-hero" class="hero"></section>
+      <div class="cols">
+        <main class="main-col">
+          <p class="sec-label">Latest</p>
+          <div id="section-grid" class="grid"></div>
+        </main>
+        <aside class="rail-col">
+          <p class="sec-label">Earlier this week</p>
+          <div id="rail-list"></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Read Later view ── -->
+  <div class="view" id="view-later">
+    <div class="list-view" id="later-content"></div>
+  </div>
+
+  <!-- ── History view ── -->
+  <div class="view" id="view-history">
+    <div class="list-view" id="history-content"></div>
+  </div>
+
+  <!-- ── Settings view ── -->
+  <div class="view" id="view-settings">
+    <div class="list-view" id="settings-content"></div>
+  </div>
+
+</div>
+
+<script>
+/* ── Theme (light is default; .dark opts in) ──────────── */
+if (localStorage.getItem('theme') === 'dark') {
+  document.documentElement.classList.add('dark');
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+
+/* ── Config ───────────────────────────────────────────── */
+const DIGEST_URL        = './digest.json';
+const STATE_URL         = '/state';
+const READ_KEY          = 'digest_read_v1';
+const LATER_KEY         = 'digest_read_later';
+const HISTORY_KEY       = 'digest_history_v1';
+const VIEW_STATE_KEY    = 'digest_view_state_v1';
+const STATE_UPDATED_KEY = 'digest_state_updated_at';
+const SOURCE_STATS_KEY  = 'digest_source_stats_v1';
+const LEARNING_KEY      = 'digest_learning_v1';
+const HERO_THRESH       = 8.0;   // effectiveScore at/above this is "lead" material
+const LEAD_MAX          = 4;     // cap the lead tier so it stays editorial
+const MID_THRESH        = 5.5;   // (legacy; kept for any external reference)
+const HISTORY_DAYS      = 3; // keep today + 2 prior calendar days
+
+const DEFAULT_VIEW_STATE = { currentView: 'digest', currentCat: 'all', digestCat: 'all' };
+
+/* ── Category metadata (c = accent color) ─────────────── */
+// Built from GET /categories at load (see buildCats); this is the fallback if
+// that fetch fails. Categories are configured server-side in categories.json.
+let CATS = {
+  all:          { label: 'All' },
+  ai:           { label: 'AI',           c: 'var(--c-ai)' },
+  tech:         { label: 'Tech',         c: 'var(--c-tech)' },
+  gaming:       { label: 'Gaming',       c: 'var(--c-gaming)' },
+  music:        { label: 'Music',        c: 'var(--c-music)' },
+  woodworking:  { label: 'Woodworking',  c: 'var(--c-woodworking)' },
+  photography:  { label: 'Photography',  c: 'var(--c-photography)' },
+  devtools:     { label: 'Dev Tools',    c: 'var(--c-devtools)' },
+  pm:           { label: 'Product',      c: 'var(--c-pm)' },
+  productivity: { label: 'Productivity', c: 'var(--c-productivity)' },
+};
+
+// Rebuild CATS from the server's category config: {all} + one {label, color}
+// per category, in config order (drives nav order + card colors).
+function buildCats(list) {
+  if (!Array.isArray(list) || !list.length) return;
+  const next = { all: { label: 'All' } };
+  for (const c of list) {
+    if (c && c.key) next[c.key] = { label: c.label || c.key, c: c.color || '#8a90a0' };
+  }
+  CATS = next;
+}
+
+/* ── State helpers ────────────────────────────────────── */
+let allArticles = [];
+let sharedState = {
+  readIds: new Set(),
+  later: [],
+  history: [],
+  viewState: { ...DEFAULT_VIEW_STATE },
+  sourceStats: {},
+  learning: { lastDecayAt: null },
+  updatedAt: null,
+};
+
+function normalizeSourceStats(raw) {
+  if (!raw || typeof raw !== 'object') return {};
+  const out = {};
+  for (const [source, counters] of Object.entries(raw)) {
+    if (typeof source !== 'string' || !counters || typeof counters !== 'object') continue;
+    out[source] = {
+      opens: Number(counters.opens) || 0,
+      saves: Number(counters.saves) || 0,
+      dismisses: Number(counters.dismisses) || 0,
+    };
+  }
+  return out;
+}
+
+function normalizeState(raw = {}) {
+  const viewState = raw.viewState || {};
+  const learning = raw.learning && typeof raw.learning === 'object' ? raw.learning : {};
+  return {
+    updatedAt: raw.updatedAt || null,
+    readIds: new Set(Array.isArray(raw.readIds) ? raw.readIds : []),
+    later: Array.isArray(raw.later) ? raw.later : [],
+    history: Array.isArray(raw.history) ? raw.history : [],
+    viewState: {
+      currentView: viewState.currentView || 'digest',
+      currentCat: viewState.currentCat || 'all',
+      digestCat: viewState.digestCat || 'all',
+    },
+    sourceStats: normalizeSourceStats(raw.sourceStats),
+    learning: { lastDecayAt: typeof learning.lastDecayAt === 'string' ? learning.lastDecayAt : null },
+  };
+}
+
+function migrateDailyHistory() {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('digest_history_')) keys.push(key);
+  }
+  const history = [];
+  keys.forEach((key) => {
+    const items = JSON.parse(localStorage.getItem(key) || '[]');
+    if (Array.isArray(items)) history.push(...items);
+    localStorage.removeItem(key);
+  });
+  return history;
+}
+
+function loadLocalState() {
+  const readIds = new Set(JSON.parse(localStorage.getItem(READ_KEY) || '[]'));
+  const later = JSON.parse(localStorage.getItem(LATER_KEY) || '[]');
+  const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  const viewState = JSON.parse(localStorage.getItem(VIEW_STATE_KEY) || JSON.stringify(DEFAULT_VIEW_STATE));
+  const updatedAt = localStorage.getItem(STATE_UPDATED_KEY);
+  const sourceStats = normalizeSourceStats(JSON.parse(localStorage.getItem(SOURCE_STATS_KEY) || '{}'));
+  const learning = JSON.parse(localStorage.getItem(LEARNING_KEY) || '{}');
+
+  const migratedHistory = migrateDailyHistory();
+  const mergedHistory = [...history];
+  migratedHistory.forEach((item) => {
+    if (item && item.id && !mergedHistory.find((h) => h.id === item.id)) mergedHistory.push(item);
+  });
+
+  return {
+    updatedAt,
+    readIds,
+    later,
+    history: mergedHistory,
+    viewState,
+    sourceStats,
+    learning: { lastDecayAt: typeof learning.lastDecayAt === 'string' ? learning.lastDecayAt : null },
+  };
+}
+
+function saveLocalState(state) {
+  localStorage.setItem(READ_KEY, JSON.stringify([...state.readIds]));
+  localStorage.setItem(LATER_KEY, JSON.stringify(state.later));
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(state.history));
+  localStorage.setItem(VIEW_STATE_KEY, JSON.stringify(state.viewState));
+  localStorage.setItem(STATE_UPDATED_KEY, state.updatedAt || new Date().toISOString());
+  localStorage.setItem(SOURCE_STATS_KEY, JSON.stringify(state.sourceStats || {}));
+  localStorage.setItem(LEARNING_KEY, JSON.stringify(state.learning || { lastDecayAt: null }));
+}
+
+async function loadRemoteState() {
+  try {
+    const res = await fetch(STATE_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return normalizeState(await res.json());
+  } catch (err) {
+    return null;
+  }
+}
+
+async function saveRemoteState(state) {
+  const payload = {
+    ...state,
+    readIds: [...state.readIds],
+  };
+
+  const res = await fetch(STATE_URL, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return normalizeState(await res.json());
+}
+
+function statesDiffer(a, b) {
+  if (a.readIds.size !== b.readIds.size) return true;
+  if (a.later.length !== b.later.length) return true;
+  if (a.history.length !== b.history.length) return true;
+  return false;
+}
+
+function applySharedState(state) {
+  sharedState = {
+    ...state,
+    readIds: new Set(state.readIds),
+    viewState: { ...state.viewState },
+  };
+
+  currentView = sharedState.viewState.currentView;
+  currentCat = sharedState.viewState.currentCat;
+  digestCat = sharedState.viewState.digestCat;
+}
+
+let pendingRemoteSave = false;
+let queuedRemoteSave = false;
+let syncFailureCount = 0;
+let syncRetryTimer = null;
+
+function scheduleRetry() {
+  if (syncRetryTimer) return;
+  // Exponential backoff capped at 30s; resets on success.
+  const delay = Math.min(30000, 1000 * Math.pow(2, Math.max(0, syncFailureCount - 1)));
+  syncRetryTimer = setTimeout(() => {
+    syncRetryTimer = null;
+    saveSharedState().catch(() => {});
+  }, delay);
+}
+
+function setSyncStatus(state, message) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  el.dataset.state = state;
+  el.textContent = message || '';
+  el.style.display = state === 'idle' ? 'none' : 'inline-flex';
+}
+
+async function saveSharedState({ remote = true } = {}) {
+  sharedState.updatedAt = new Date().toISOString();
+  saveLocalState(sharedState);
+
+  if (!remote) return;
+
+  // If a save is already in flight, just mark that another is pending — we'll
+  // re-fire after the current one settles. This collapses bursts of clicks
+  // into at-most-one-trailing PUT and avoids racing the server.
+  if (pendingRemoteSave) {
+    queuedRemoteSave = true;
+    return;
+  }
+  pendingRemoteSave = true;
+
+  // Snapshot what we sent so we can tell if the server pruned anything
+  // (e.g. dropped a 30-day-old Read Later item) and rerender if so.
+  // Skipping rerender when nothing changed avoids interrupting in-flight
+  // dismiss animations on every save.
+  const sentLaterCount = sharedState.later.length;
+  const sentHistoryCount = sharedState.history.length;
+
+  try {
+    const remoteState = await saveRemoteState(sharedState);
+    if (remoteState) applySharedState(remoteState);
+    saveLocalState(sharedState);
+    syncFailureCount = 0;
+    setSyncStatus('idle');
+    // Only a server-side aging of Read Later / History warrants a rerender.
+    // readIds no longer shrink to the digest, and rerendering on a readIds
+    // change would restructure the page mid-triage (the dismissed card would
+    // be rebuilt and a new lead promoted under you).
+    const pruned =
+      sharedState.later.length < sentLaterCount ||
+      sharedState.history.length < sentHistoryCount;
+    if (pruned) rerenderActiveView();
+  } catch (err) {
+    syncFailureCount += 1;
+    setSyncStatus('error', `Sync failed — retrying (${syncFailureCount})`);
+    scheduleRetry();
+    console.warn('Remote state save failed:', err);
+  } finally {
+    pendingRemoteSave = false;
+    if (queuedRemoteSave) {
+      queuedRemoteSave = false;
+      saveSharedState().catch(() => {});
+    }
+  }
+}
+
+function rerenderActiveView() {
+  buildCatNav();
+  updateCatCounts();
+  updateBadges();
+  if (currentView === 'history') renderHistory();
+  else if (currentView === 'later') renderLater();
+  else if (currentView === 'settings') renderSettings();
+  else render();
+}
+
+let pendingRemoteRefresh = false;
+async function refreshFromRemote() {
+  // Skip if a save is in flight — the PUT response already carries fresh state.
+  if (pendingRemoteSave || pendingRemoteRefresh) return;
+  pendingRemoteRefresh = true;
+  try {
+    const remote = await loadRemoteState();
+    if (!remote) return;
+    // A save that started while the GET was in flight means the snapshot we
+    // just got is older than our local changes — applying it would clobber
+    // the unsynced dismiss/later/history mutation and bring the article back.
+    if (pendingRemoteSave) return;
+    const changed = statesDiffer(sharedState, remote);
+    applySharedState(remote);
+    saveLocalState(sharedState);
+    if (changed) rerenderActiveView();
+  } catch (err) {
+    console.warn('Remote state refresh failed:', err);
+  } finally {
+    pendingRemoteRefresh = false;
+  }
+}
+
+/* ── State ────────────────────────────────────────────── */
+let currentCat = 'all';
+let currentView = 'digest';
+let digestCat = 'all';
+
+/* ── View switching ───────────────────────────────────── */
+
+function setActiveView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.viewnav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  document.getElementById('vnav-' + view).classList.add('active');
+  // The search box rides the view-nav row but only applies to Home.
+  const search = document.getElementById('digest-search');
+  if (search) search.style.display = (view === 'digest') ? '' : 'none';
+}
+
+function switchView(view) {
+  // Save current digest category before leaving
+  if (currentView === 'digest') digestCat = currentCat;
+
+  // Reset category to all when switching to history or later
+  if (view !== 'digest') currentCat = 'all';
+  else currentCat = digestCat;
+
+  currentView = view;
+  sharedState.viewState = { currentView, currentCat, digestCat };
+  saveSharedState().catch(() => {});
+
+  setActiveView(view);
+  buildCatNav();
+
+  if (view === 'history')  renderHistory();
+  if (view === 'later')    renderLater();
+  if (view === 'digest')   render();
+  if (view === 'settings') renderSettings();
+}
+
+/* ── Helpers ──────────────────────────────────────────── */
+function saveRead() {
+  saveSharedState().catch(() => {});
+}
+
+function scoreColor(score) {
+  if (score >= 8)   return '#639922';
+  if (score >= 5.5) return '#BA7517';
+  return '#555250';
+}
+
+function scoreDot(score) {
+  return `<span class="score-dot" style="background:${scoreColor(score)};"></span>`;
+}
+
+function catMeta(c) { return CATS[c] || { label: c, c: '#8a90a0' }; }
+
+// Image thumbnail with a category-tinted fallback. If the image fails (or there
+// is none), the category-colored block with its label shows through.
+function thumb(a) {
+  const cat = catMeta(a.category);
+  const tint = `color-mix(in srgb, ${cat.c} 22%, var(--surface2))`;
+  const ph = `<div class="ph">${cat.label || a.category}</div>`;
+  const im = a.image
+    ? `<img src="${a.image}" alt="" loading="lazy" onerror="this.style.display='none'">`
+    : '';
+  // Count badge when this card rolls up duplicates — clearly visible on the image.
+  const others = (a._clusterOthers || []).length;
+  const badge = others > 0 ? `<span class="thumb-badge">＋${others}</span>` : '';
+  return `<div class="thumb" style="background:${tint}">${ph}${im}${badge}</div>`;
+}
+
+// Category kicker (colored dot + label). Rollups are signalled by the "＋N"
+// thumbnail badge and the expander, not a separate pill here.
+function kicker(a) {
+  const cat = catMeta(a.category);
+  return `<span class="kicker" style="color:${cat.c}"><span class="cdot" style="background:${cat.c}"></span>${cat.label || a.category}</span>`;
+}
+
+function articleDate(article) {
+  // Calendar-day buckets in the viewer's local timezone — not rolling 24h windows.
+  // An article posted yesterday at 11pm should read "yesterday" at 1am, not "today".
+  const pub = new Date(article.published_at);
+  const today = new Date();
+  const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const diffDays = Math.round((startOfDay(today) - startOfDay(pub)) / 86400000);
+  if (diffDays <= 0) return 'today';
+  if (diffDays === 1) return 'yesterday';
+  return `${diffDays} days ago`;
+}
+
+function isToday(article) { return articleDate(article) === 'today'; }
+
+function isInHistoryWindow(item) {
+  if (!item || !item.viewedAt) return false;
+  const t = new Date(item.viewedAt);
+  if (isNaN(t)) return false;
+  const cutoff = new Date();
+  cutoff.setHours(0, 0, 0, 0);
+  cutoff.setDate(cutoff.getDate() - (HISTORY_DAYS - 1));
+  return t >= cutoff;
+}
+
+function laterIdSet() {
+  return new Set(sharedState.later.map(a => a.id));
+}
+
+// History = items viewed within the window that are NOT currently saved to
+// Read Later. Saving curates an item out of History; this is the single source
+// of truth all three History surfaces (view, badge, category counts) use.
+function historyItems() {
+  const inLater = laterIdSet();
+  return sharedState.history.filter(h => isInHistoryWindow(h) && !inLater.has(h.id));
+}
+
+function visible(article) {
+  if (sharedState.readIds.has(article.id)) return false;
+  if (sharedState.later.some(a => a.id === article.id)) return false;
+  return currentCat === 'all' || article.category === currentCat;
+}
+
+// The inbox: every unread, not-saved story in the digest, de-duplicated to one
+// rep per cluster. The pipeline now carries unread stories forward and prunes
+// them by a rank-weighted lifespan, so the digest *is* the retained set — the
+// client trusts it rather than re-applying its own recency window. Badges and
+// category counts all derive from this so the numbers match the cards shown.
+function inboxReps() {
+  const inLater = laterIdSet();
+  return dedupeToReps(allArticles.filter(
+    a => !sharedState.readIds.has(a.id) && !inLater.has(a.id)));
+}
+
+function formatTime(isoString) {
+  return new Date(isoString).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+function formatDateTime(isoString) {
+  return new Date(isoString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+/* ── Copy ─────────────────────────────────────────────── */
+function copyArticle(title, url, btn) {
+  const text = title + '\n' + url;
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => flashCopy(btn)).catch(() => fallbackCopy(text, btn));
+  } else {
+    fallbackCopy(text, btn);
+  }
+}
+
+function fallbackCopy(text, btn) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;opacity:0;';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); flashCopy(btn); } catch(e) { btn.textContent = 'Failed'; }
+  document.body.removeChild(ta);
+}
+
+function flashCopy(btn) {
+  const orig = btn.textContent;
+  btn.textContent = 'Copied!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+}
+
+/* ── Learning: per-source affinity ────────────────────── */
+// Counters live on sharedState.sourceStats and persist independently of
+// readIds/later/history so inbox hygiene (clearing Later, history aging out)
+// doesn't wipe preferences. Affinity is derived, not stored.
+const AFFINITY_MIN          = 0.5;
+const AFFINITY_MAX          = 2.0;
+const WEIGHT_OPEN           = 0.10;
+const WEIGHT_SAVE           = 0.20;
+const WEIGHT_DISMISS        = 0.05;
+const LEARNING_DECAY_DAYS   = 7;
+const LEARNING_DECAY_FACTOR = 0.97;
+
+function ensureSourceStat(source) {
+  if (!sharedState.sourceStats) sharedState.sourceStats = {};
+  if (!sharedState.sourceStats[source]) {
+    sharedState.sourceStats[source] = { opens: 0, saves: 0, dismisses: 0 };
+  }
+  return sharedState.sourceStats[source];
+}
+
+function recordInteraction(source, kind) {
+  if (!source) return;
+  const s = ensureSourceStat(source);
+  if (kind === 'open')          s.opens     += 1;
+  else if (kind === 'save')     s.saves     += 1;
+  else if (kind === 'dismiss')  s.dismisses += 1;
+}
+
+function affinityFor(source) {
+  const s = sharedState.sourceStats && sharedState.sourceStats[source];
+  if (!s) return 1.0;
+  const v = 1.0 + WEIGHT_OPEN * s.opens + WEIGHT_SAVE * s.saves - WEIGHT_DISMISS * s.dismisses;
+  if (v < AFFINITY_MIN) return AFFINITY_MIN;
+  if (v > AFFINITY_MAX) return AFFINITY_MAX;
+  return v;
+}
+
+function effectiveScore(article) {
+  // Base relevance, plus same-topic coverage boost (cluster_boost) and the
+  // personalization boost (taste_boost, baked in by the pipeline from what you
+  // save/open), all lifted by the per-source affinity multiplier.
+  return ((article.score || 0) + (article.cluster_boost || 0) + (article.taste_boost || 0))
+    * affinityFor(article.source);
+}
+
+// Lazy time-decay: weight recent behavior more heavily by multiplying every
+// counter by LEARNING_DECAY_FACTOR after LEARNING_DECAY_DAYS. Idempotent —
+// runs at most once per decay window.
+function maybeDecayLearning() {
+  if (!sharedState.learning) sharedState.learning = { lastDecayAt: null };
+  const last = sharedState.learning.lastDecayAt ? Date.parse(sharedState.learning.lastDecayAt) : 0;
+  const now = Date.now();
+  // First-ever run — set the clock without applying decay so we don't
+  // wrongly age counters whose start time we never recorded.
+  if (!last) {
+    sharedState.learning.lastDecayAt = new Date(now).toISOString();
+    return true;
+  }
+  if ((now - last) < LEARNING_DECAY_DAYS * 86400000) return false;
+  if (sharedState.sourceStats) {
+    for (const s of Object.values(sharedState.sourceStats)) {
+      s.opens     *= LEARNING_DECAY_FACTOR;
+      s.saves     *= LEARNING_DECAY_FACTOR;
+      s.dismisses *= LEARNING_DECAY_FACTOR;
+    }
+  }
+  sharedState.learning.lastDecayAt = new Date(now).toISOString();
+  return true;
+}
+
+window.resetLearning = function() {
+  sharedState.sourceStats = {};
+  sharedState.learning = { lastDecayAt: new Date().toISOString() };
+  saveSharedState().catch(() => {});
+  rerenderActiveView();
+};
+
+/* ── Clustering: a cluster is one story ───────────────── */
+// Mark every article in the same cluster as read so a multi-source story
+// leaves Home as a single unit — Done on the card, opening any member, or
+// saving the representative to Later all retire the whole cluster.
+function markClusterRead(id) {
+  const a = allArticles.find(x => x.id === id);
+  if (!a) return;
+  const cid = a.cluster_id || a.id;
+  allArticles.forEach(x => { if ((x.cluster_id || x.id) === cid) sharedState.readIds.add(x.id); });
+}
+
+// Summarise a representative's cluster — the other articles semantically about
+// the same topic that this card collapses. Source-agnostic: a duplicate is a
+// duplicate whether it's the same outlet or a different one. Null for singletons.
+function clusterInfo(a) {
+  const others = a._clusterOthers || [];
+  if (!others.length) return null;
+  return { others, count: others.length + 1 };
+}
+
+// Expander listing the other same-topic articles folded into this card.
+// Opening any of them retires the whole group.
+function clusterDisclosure(a) {
+  const ci = clusterInfo(a);
+  if (!ci) return '';
+  const items = ci.others.map(o => `<li>
+        <span class="cluster-src">${o.source}</span>
+        <a href="${o.url}" onclick="openClusterMember('${a.id}','${o.id}','${o.url}'); return false;">${o.title} <span class="cluster-ext">↗</span></a>
+      </li>`).join('');
+  const n = ci.others.length;
+  return `<details class="cluster-more" onclick="event.stopPropagation();">
+      <summary>Show ${n} collapsed article${n === 1 ? '' : 's'}</summary>
+      <ul class="cluster-list">${items}</ul>
+    </details>`;
+}
+
+window.openClusterMember = function(repId, memberId, url) {
+  const member = allArticles.find(a => a.id === memberId);
+  if (member) {
+    if (!sharedState.history.find(h => h.id === memberId)) {
+      sharedState.history.push({
+        id: member.id, title: member.title, url: member.url,
+        source: member.source, category: member.category,
+        viewedAt: new Date().toISOString(),
+      });
+    }
+    // Engagement credits the source actually clicked, not the representative.
+    recordInteraction(member.source, 'open');
+  }
+  window.open(url, '_blank');
+  // Opening any coverage marks the whole story read and removes the card.
+  dismiss(repId, true);
+  updateBadges();
+};
+
+/* ── Dismiss ──────────────────────────────────────────── */
+window.dismiss = function(id, internal = false) {
+  if (!internal) {
+    const article = allArticles.find(a => a.id === id);
+    if (article) recordInteraction(article.source, 'dismiss');
+  }
+  sharedState.readIds.add(id);
+  markClusterRead(id);
+  saveRead();
+  // Fade the card out but keep its box (animateDismiss) — nothing else moves.
+  // The layout re-flows only when you next enter the digest view.
+  animateDismiss(id);
+  updateCatCounts();
+};
+
+/* ── Open article ─────────────────────────────────────── */
+function openArticle(id, url) {
+  const article = allArticles.find(a => a.id === id);
+  if (article) {
+    if (!sharedState.history.find((h) => h.id === id)) {
+      sharedState.history.push({
+        id: article.id,
+        title: article.title,
+        url: article.url,
+        source: article.source,
+        category: article.category,
+        viewedAt: new Date().toISOString(),
+      });
+      updateBadges();
+    }
+    recordInteraction(article.source, 'open');
+    sharedState.readIds.add(id);
+    saveSharedState().catch(() => {});
+  }
+
+  window.open(url, '_blank');
+  // Pass internal=true so dismiss doesn't double-count this as a dismiss —
+  // an open is positive signal, dismiss is the cleanup that follows.
+  dismiss(id, true);
+}
+
+/* ── Save for later ───────────────────────────────────── */
+function saveForLater(id) {
+  const article = allArticles.find(a => a.id === id);
+  if (!article) return;
+  if (!sharedState.later.find((a) => a.id === id)) {
+    sharedState.later.push({
+      id: article.id,
+      title: article.title,
+      url: article.url,
+      source: article.source,
+      category: article.category,
+      savedAt: new Date().toISOString(),
+    });
+  }
+  // History is "viewed but not saved" — saving moves it out of History so an
+  // item is never in both lists. (See also the laterIds guard in the views.)
+  sharedState.history = sharedState.history.filter((h) => h.id !== id);
+  recordInteraction(article.source, 'save');
+  // Mutate readIds before the first save so the PUT payload carries both
+  // changes — otherwise the server's response would replace the local readIds
+  // addition that dismiss() makes a tick later. markClusterRead retires the
+  // rest of the story so it leaves Home via the representative.
+  sharedState.readIds.add(id);
+  markClusterRead(id);
+  saveSharedState().catch(() => {});
+  updateBadges();
+  animateDismiss(id);
+  // Generate the TL;DR now so it's ready when you come back to read later.
+  const saved = sharedState.later.find(a => a.id === id);
+  if (saved && !(saved.tldr && saved.tldr.length)) requestTldr(id, saved.url, saved.title);
+}
+
+function animateDismiss(id) {
+  // Fade the card to invisible but leave its box in place, so triaging never
+  // shifts or resizes anything else. The card is gone from the data (readIds),
+  // so the next render() — on revisit — rebuilds the layout without it.
+  const el = document.getElementById('wrap-' + id);
+  if (el) el.classList.add('removed');
+}
+
+/* ── Remove from later ────────────────────────────────── */
+function removeFromLater(id) {
+  sharedState.later = sharedState.later.filter((a) => a.id !== id);
+  // Keep readIds in sync so the article doesn't reappear on Home when removed.
+  sharedState.readIds.add(id);
+  saveSharedState().catch(() => {});
+  const el = document.getElementById('later-row-' + id);
+  if (el) { el.style.opacity = '0'; setTimeout(() => { el.remove(); updateBadges(); renderLaterCount(); }, 260); }
+}
+
+/* ── Open from Read Later ─────────────────────────────── */
+function openLaterArticle(id) {
+  const article = sharedState.later.find((a) => a.id === id);
+  if (!article) return;
+  if (!sharedState.history.find((h) => h.id === id)) {
+    sharedState.history.push({
+      id: article.id,
+      title: article.title,
+      url: article.url,
+      source: article.source,
+      category: article.category,
+      viewedAt: new Date().toISOString(),
+    });
+  }
+  recordInteraction(article.source, 'open');
+  sharedState.readIds.add(id);
+  removeFromLater(id);
+}
+
+/* ── Category nav ─────────────────────────────────────── */
+function buildCatNav() {
+  const bar = document.getElementById('catbar');
+
+  if (currentView === 'digest') {
+    bar.style.display = 'flex';
+    const counts = {};
+    // Per-category tallies over the retained inbox (today + carried), as
+    // stories — kept in step with the nav badge and the cards on screen.
+    inboxReps().forEach(a => {
+      counts.all = (counts.all || 0) + 1;
+      counts[a.category] = (counts[a.category] || 0) + 1;
+    });
+    bar.innerHTML = Object.keys(CATS).map(key => {
+      const c = CATS[key];
+      const n = counts[key] || 0;
+      const badge = n > 0 ? `<span class="badge">${n}</span>` : '';
+      return `<button class="cattab${key === currentCat ? ' active' : ''}" data-cat="${key}" onclick="setCategory('${key}')">${c.c ? `<span class="cat-dot" style="background:${c.c}"></span>` : ''}${c.label}${badge}</button>`;
+    }).join('');
+  } else if (currentView === 'later') {
+    bar.style.display = 'flex';
+    const later = sharedState.later;
+    const counts = {};
+    later.forEach(a => {
+      counts.all = (counts.all || 0) + 1;
+      counts[a.category] = (counts[a.category] || 0) + 1;
+    });
+    bar.innerHTML = Object.keys(CATS).map(key => {
+      const c = CATS[key];
+      const n = counts[key] || 0;
+      const badge = n > 0 ? `<span class="badge">${n}</span>` : '';
+      return `<button class="cattab${key === currentCat ? ' active' : ''}" data-cat="${key}" onclick="setCategory('${key}')">${c.c ? `<span class="cat-dot" style="background:${c.c}"></span>` : ''}${c.label}${badge}</button>`;
+    }).join('');
+  } else if (currentView === 'history') {
+    bar.style.display = 'flex';
+    const hist = historyItems();
+    const counts = {};
+    hist.forEach(a => {
+      counts.all = (counts.all || 0) + 1;
+      if (a.category) counts[a.category] = (counts[a.category] || 0) + 1;
+    });
+    bar.innerHTML = Object.keys(CATS).map(key => {
+      const c = CATS[key];
+      const n = counts[key] || 0;
+      const badge = n > 0 ? `<span class="badge">${n}</span>` : '';
+      return `<button class="cattab${key === currentCat ? ' active' : ''}" data-cat="${key}" onclick="setCategory('${key}')">${c.c ? `<span class="cat-dot" style="background:${c.c}"></span>` : ''}${c.label}${badge}</button>`;
+    }).join('');
+  } else {
+    // Settings (and any future non-list views) — no category filter applies.
+    bar.style.display = 'none';
+  }
+}
+
+function updateCatCounts() {
+  buildCatNav();
+  updateBadges();
+  // Masthead tally next to the date: today's unread stories, de-duped on the
+  // same basis as the Home badge/chips (inboxReps) but scoped to today and
+  // labelled "today" so it reads distinctly from the full inbox count.
+  const todayStories = inboxReps().filter(a => isToday(a)).length;
+  document.getElementById('header-count').textContent = `${todayStories} today`;
+}
+
+window.setCategory = function(cat) {
+  currentCat = cat;
+  sharedState.viewState = { currentView, currentCat, digestCat };
+  saveSharedState().catch(() => {});
+  buildCatNav();
+  if (currentView === 'digest')  render();
+  if (currentView === 'later')   renderLater();
+  if (currentView === 'history') renderHistory();
+};
+
+/* ── Badges ───────────────────────────────────────────── */
+function updateBadges() {
+  const hist = historyItems();
+  const later = sharedState.later;
+  // Count the whole retained inbox (today + carried), de-duped to stories, so
+  // the badge tracks what's actually available and doesn't reset each midnight.
+  const unread = inboxReps().length;
+
+  document.getElementById('badge-digest').textContent  = unread  || '';
+  document.getElementById('badge-history').textContent = hist.length || '';
+  document.getElementById('badge-later').textContent   = later.length || '';
+}
+
+/* ── Render digest ────────────────────────────────────── */
+// Layout balance: the front page (hero + Latest grid) should never be a stub,
+// and the single-column "Earlier this week" rail should track the grid's height
+// rather than running far past it. FRONT_MIN is the fewest stories that make a
+// proper front page (hero of 5 + ~2 grid rows); RAIL_MIN keeps the rail from
+// going too sparse when the grid is short.
+const FRONT_MIN = 11;
+const RAIL_MIN = 6;
+let railShowAll = false;
+
+/* ── Search (Home) ────────────────────────────────────── */
+// Hybrid filter, like the category chips — not a Q&A box. Instant client-side
+// keyword matching over the loaded digest (always finds an exact term that's on
+// the page), plus server-side semantic matches (the server embeds the query and
+// cosine-ranks the stored embeddings) for meaning/paraphrase recall.
+let digestSearchQuery   = '';
+let digestSearchResults = null;   // [{id,score}] from /search, or null when idle
+let digestSearchLoading = false;
+let digestSearchTimer   = null;
+let digestSearchSeq     = 0;      // drops out-of-order responses
+
+window.onDigestSearchInput = function(value) {
+  digestSearchQuery = value;
+  clearTimeout(digestSearchTimer);
+  if (!value.trim()) {            // cleared → back to the magazine
+    digestSearchResults = null;
+    digestSearchLoading = false;
+    render();
+    return;
+  }
+  digestSearchResults = null;     // drop stale semantic hits; keyword shows instantly
+  digestSearchLoading = true;
+  render();                        // client-side keyword matches render right away
+  digestSearchTimer = setTimeout(() => runDigestSearch(value.trim()), 300);
+};
+
+async function runDigestSearch(q) {
+  const seq = ++digestSearchSeq;
+  try {
+    const res = await fetch('/search?q=' + encodeURIComponent(q));
+    const data = await res.json();
+    if (seq !== digestSearchSeq) return;        // a newer query superseded this
+    digestSearchResults = Array.isArray(data.results) ? data.results : [];
+  } catch (e) {
+    if (seq !== digestSearchSeq) return;
+    digestSearchResults = [];
+  } finally {
+    if (seq === digestSearchSeq) {
+      digestSearchLoading = false;
+      if (currentView === 'digest') render();
+    }
+  }
+}
+
+function renderSearchResults() {
+  const el = document.getElementById('search-results');
+  const q  = digestSearchQuery.trim();
+  const ql = q.toLowerCase();
+  const byId = new Map(allArticles.map(a => [a.id, a]));
+  const semIds = new Set((digestSearchResults || []).map(r => r.id));
+
+  // Saved (Read Later) matches — highlighted at the top. Matched by keyword over
+  // the saved item (incl. its TL;DR), or because it still surfaced semantically.
+  const savedHits = sharedState.later.filter(a =>
+    (currentCat === 'all' || a.category === currentCat) &&
+    (semIds.has(a.id) ||
+     (ql && (a.title + ' ' + (a.source || '') + ' ' + (a.bottomLine || '') + ' '
+             + ((a.tldr || []).join(' '))).toLowerCase().includes(ql))));
+
+  // Digest matches: semantic first (by similarity), then keyword over the loaded
+  // page (safety net for index drift / sub-threshold similarity). visible()
+  // already excludes saved items, so they only appear in the section above.
+  // Search lists every match individually (dedupe by article id, not cluster)
+  // and clears the rollup — a specific article that shares a cluster with
+  // another must never be hidden under another card's "show more".
+  const seen = new Set();   // article ids already placed
+  const order = [];
+  const add = (a) => {
+    if (!a || !visible(a)) return;
+    if (seen.has(a.id)) return;
+    seen.add(a.id);
+    a._clusterOthers = [];
+    order.push(a);
+  };
+  for (const r of (digestSearchResults || [])) add(byId.get(r.id));
+  if (ql) for (const a of allArticles) {
+    if ((a.title + ' ' + (a.summary || '') + ' ' + (a.source || '')).toLowerCase().includes(ql)) add(a);
+  }
+
+  if (!savedHits.length && !order.length) {
+    el.innerHTML = '<p class="sec-label">Search</p>'
+      + (digestSearchLoading ? '<p class="empty">Searching…</p>'
+                             : `<p class="empty">No stories match “${escapeAttr(q)}”.</p>`);
+    return;
+  }
+  const more = digestSearchLoading ? ' …' : '';
+  let html = '';
+  if (savedHits.length) {
+    html += `<p class="sec-label">Saved for later · ${savedHits.length}</p>`
+      + `<div class="grid">${savedHits.map(savedCardHTML).join('')}</div>`;
+  }
+  if (order.length) {
+    html += `<p class="sec-label">${order.length} result${order.length === 1 ? '' : 's'} for “${escapeAttr(q)}”${more}</p>`
+      + `<div class="grid">${order.map(gridCardHTML).join('')}</div>`;
+  }
+  el.innerHTML = html;
+}
+
+function render() {
+  // Semantic search active: swap the magazine for a ranked results list. The
+  // magazine sections are emptied so their card ids don't collide with the
+  // results' (dismiss/save find cards by `wrap-<id>`).
+  const magazine = document.getElementById('digest-magazine');
+  const resultsEl = document.getElementById('search-results');
+  if (digestSearchQuery.trim()) {
+    magazine.style.display = 'none';
+    document.getElementById('section-hero').innerHTML = '';
+    document.getElementById('section-grid').innerHTML = '';
+    document.getElementById('rail-list').innerHTML = '';
+    resultsEl.style.display = '';
+    renderSearchResults();
+    return;
+  }
+  resultsEl.style.display = 'none';
+  resultsEl.innerHTML = '';
+  magazine.style.display = '';
+
+  // Bucket and order by effectiveScore = (score + cluster_boost) × source-
+  // affinity so the pipeline-assigned score still dictates the baseline, cross-
+  // source coverage lifts a story, and sources you consistently engage with get
+  // nudged upward (and dismissed sources down).
+  // Collapse same-story coverage: group by cluster, reduce each to one
+  // representative, and stash the rest on the rep for the coverage marker +
+  // "+N more covering this" disclosure. Applied to both today and the rail.
+  // One ranked inbox, split into today (by score) and earlier (carried, by
+  // recency). The front page draws today first; if today can't fill it (you've
+  // cleared the top), it borrows the best of earlier so no section sits empty.
+  const today = dedupeToReps(allArticles.filter(a => isToday(a) && visible(a)))
+    .sort((a, b) => effectiveScore(b) - effectiveScore(a));
+  const earlier = dedupeToReps(allArticles.filter(a => !isToday(a) && visible(a)))
+    .sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+
+  let front = today;
+  if (front.length < FRONT_MIN) front = front.concat(earlier.slice(0, FRONT_MIN - front.length));
+  const promoted = new Set(front.map(a => a.id));
+
+  // Magazine front page: top rep is the lead, next four are hero secondaries,
+  // the rest is the Latest card grid.
+  const lead = front[0] || null;
+  const side = front.slice(1, 5);
+  const gridCards = front.slice(5);
+
+  // Rail = earlier not promoted, capped to roughly the grid's height so it never
+  // runs far past the left column. Dismissing rail items pulls the reserve up
+  // (re-render backfills at the end); "Show more" reveals it on demand.
+  const railPool = earlier.filter(a => !promoted.has(a.id));
+  const railCap = Math.max(RAIL_MIN, gridCards.length);
+  const railShown = railShowAll ? railPool : railPool.slice(0, railCap);
+
+  renderHero(lead, side);
+  renderGrid(gridCards);
+  renderRail(railShown, railPool.length - railShown.length);
+}
+
+// Group articles by cluster and return one representative each, with the other
+// members attached as `_clusterOthers` for the coverage UI. Singletons (most
+// articles) come back unchanged with an empty others list.
+function dedupeToReps(list) {
+  const byCluster = new Map();
+  for (const a of list) {
+    const cid = a.cluster_id || a.id;
+    if (!byCluster.has(cid)) byCluster.set(cid, []);
+    byCluster.get(cid).push(a);
+  }
+  const reps = [];
+  for (const members of byCluster.values()) {
+    members.sort((x, y) => effectiveScore(y) - effectiveScore(x));
+    const rep = members.find(m => m.cluster_rep) || members[0];
+    rep._clusterOthers = members.filter(m => m !== rep);
+    reps.push(rep);
+  }
+  return reps;
+}
+
+function relTime(a) {
+  const d = new Date(a.published_at), now = Date.now();
+  const h = Math.floor((now - d) / 3600000);
+  if (isNaN(h)) return '';
+  if (h < 1) return 'now';
+  if (h < 24) return h + 'h';
+  return Math.floor(h / 24) + 'd';
+}
+function srcLine(a) {
+  const t = relTime(a);
+  return `<span class="src">${a.source}${t ? ` · <time>${t}</time>` : ''}</span>`;
+}
+function cardActions(a) {
+  return `<div class="card-actions">
+      <button class="act later" onclick="saveForLater('${a.id}')">Read later</button>
+      <button class="act done" onclick="dismiss('${a.id}')">Done</button>
+    </div>`;
+}
+const openLink = (a, inner) =>
+  `<a href="${a.url}" onclick="openArticle('${a.id}','${a.url}'); return false;">${inner}</a>`;
+
+function renderHero(lead, side) {
+  const el = document.getElementById('section-hero');
+  if (!lead) { el.innerHTML = '<p class="empty">No stories for this filter.</p>'; return; }
+  const leadHTML = `
+    <article class="article-wrap lead" id="wrap-${lead.id}" style="max-height:9999px;">
+      ${openLink(lead, thumb(lead))}
+      ${kicker(lead)}
+      <h2 class="lead-title">${openLink(lead, lead.title)}</h2>
+      ${lead.summary ? `<p class="lead-summary">${lead.summary}</p>` : ''}
+      ${clusterDisclosure(lead)}
+      <div class="lead-foot">${srcLine(lead)} ${cardActions(lead)}</div>
+    </article>`;
+  const sideHTML = side.map(a => `
+    <article class="article-wrap mini" id="wrap-${a.id}" style="max-height:9999px;">
+      ${openLink(a, thumb(a))}
+      <div>
+        ${kicker(a)}
+        <h3 class="mini-title">${openLink(a, a.title)}</h3>
+        ${clusterDisclosure(a)}
+        <div class="mini-foot">${srcLine(a)} ${cardActions(a)}</div>
+      </div>
+    </article>`).join('');
+  el.innerHTML = leadHTML + `<div class="hero-side">${sideHTML}</div>`;
+}
+
+function gridCardHTML(a) {
+  return `
+    <article class="article-wrap card" id="wrap-${a.id}" style="max-height:9999px;">
+      ${openLink(a, thumb(a))}
+      ${kicker(a)}
+      <h3 class="card-title">${openLink(a, a.title)}</h3>
+      ${a.summary ? `<p class="card-summary">${a.summary}</p>` : ''}
+      ${clusterDisclosure(a)}
+      <div class="card-foot">${srcLine(a)} ${cardActions(a)}</div>
+    </article>`;
+}
+
+function renderGrid(cards) {
+  const el = document.getElementById('section-grid');
+  if (!cards.length) { el.innerHTML = '<p class="empty">Nothing else in today’s digest.</p>'; return; }
+  el.innerHTML = cards.map(gridCardHTML).join('');
+}
+
+// A search hit that's already in Read Later. Highlighted, opens in a new tab
+// (a search must never silently un-save it, so no openLaterArticle here).
+function savedCardHTML(a) {
+  const link = `href="${a.url}" target="_blank" rel="noopener"`;
+  return `
+    <article class="article-wrap card saved-hit" id="saved-hit-${a.id}" style="max-height:9999px;">
+      <a ${link}>${thumb(a)}</a>
+      <span class="saved-tag">★ Saved</span>
+      <h3 class="card-title"><a ${link}>${a.title}</a></h3>
+      ${a.bottomLine ? `<p class="card-summary">${escapeAttr(a.bottomLine)}</p>` : ''}
+      <div class="card-foot">${srcLine(a)}</div>
+    </article>`;
+}
+
+function renderRail(articles, hidden = 0) {
+  const el = document.getElementById('rail-list');
+  if (!articles.length) { el.innerHTML = '<p class="empty" style="padding:8px 0;">All caught up.</p>'; return; }
+  const groups = {};
+  articles.forEach(a => { const d = articleDate(a); (groups[d] = groups[d] || []).push(a); });
+  // A "show more" when the rail is capped, or "show less" once expanded past it.
+  const moreCtl = hidden > 0
+    ? `<button class="rail-more" onclick="toggleRailMore(true)">Show ${hidden} more</button>`
+    : (railShowAll ? `<button class="rail-more" onclick="toggleRailMore(false)">Show less</button>` : '');
+  el.innerHTML = Object.entries(groups).map(([day, arts]) => `
+    <div class="rail-day">${day}</div>
+    ${arts.map(a => `
+      <article class="article-wrap rail-item" id="wrap-${a.id}" style="max-height:9999px;">
+        <a class="rail-title" href="${a.url}" onclick="openArticle('${a.id}','${a.url}'); return false;">${a.title}</a>
+        <div class="rail-meta"><span class="cdot" style="background:${catMeta(a.category).c}"></span><span>${a.source}</span></div>
+        ${clusterDisclosure(a)}
+        <div class="rail-actions">
+          <button class="act later" onclick="saveForLater('${a.id}')">Later</button>
+          <button class="act done" onclick="dismiss('${a.id}')">Done</button>
+        </div>
+      </article>`).join('')}
+  `).join('') + moreCtl;
+}
+
+window.toggleRailMore = function(showAll) {
+  railShowAll = showAll;
+  render();
+};
+
+/* ── Render Read Later ────────────────────────────────── */
+let laterSearchQuery = '';
+let historySearchQuery = '';
+
+function escapeAttr(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+// Hides .list-row elements inside container whose title+source don't match
+// query. Driven off DOM text rather than the source array so the same helper
+// works for both Later and History.
+function applyListSearch(containerId, query) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const q = (query || '').trim().toLowerCase();
+  let visible = 0, total = 0;
+  for (const row of container.querySelectorAll('.list-row')) {
+    total++;
+    if (!q) { row.style.display = ''; visible++; continue; }
+    const title = (row.querySelector('.list-title')?.textContent || '').toLowerCase();
+    const source = (row.querySelector('.list-source')?.textContent || '').toLowerCase();
+    const match = title.includes(q) || source.includes(q);
+    row.style.display = match ? '' : 'none';
+    if (match) visible++;
+  }
+  const empty = container.querySelector('.search-empty');
+  if (empty) empty.style.display = (q && total > 0 && visible === 0) ? 'block' : 'none';
+}
+
+window.onLaterSearchInput = function(value) {
+  laterSearchQuery = value;
+  applyListSearch('later-content', value);
+};
+
+window.onHistorySearchInput = function(value) {
+  historySearchQuery = value;
+  applyListSearch('history-content', value);
+};
+
+function renderLaterCount() {
+  const later = sharedState.later;
+  const countEl = document.getElementById('later-count');
+  if (countEl) countEl.textContent = `${later.length} article${later.length===1?'':'s'} saved`;
+}
+
+/* ── Read Later: TL;DR ────────────────────────────────── */
+let tldrOpen = new Set();
+
+// Generate (or regenerate) a TL;DR for a saved item via Ollama and persist it on
+// the later item so it syncs across devices. Re-finds the item by id after each
+// await because saveSharedState can replace sharedState mid-flight.
+async function requestTldr(id, url, title) {
+  const set = (fields) => {
+    const it = sharedState.later.find(a => a.id === id);
+    if (it) Object.assign(it, fields);
+  };
+  set({ tldrState: 'pending' });
+  if (currentView === 'later') renderLater();
+  try {
+    const res = await fetch('/tldr', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, title }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const bullets = Array.isArray(data.tldr) ? data.tldr : [];
+    set({ tldr: bullets, bottomLine: data.bottom_line || '',
+          tldrState: (bullets.length || data.bottom_line) ? 'ready' : 'error' });
+  } catch (e) {
+    set({ tldrState: 'error' });
+  }
+  saveSharedState().catch(() => {});
+  if (currentView === 'later') renderLater();
+}
+
+window.toggleTldr = function(id) {
+  if (tldrOpen.has(id)) { tldrOpen.delete(id); renderLater(); return; }
+  tldrOpen.add(id);
+  const it = sharedState.later.find(a => a.id === id);
+  // Generate on first open if missing (covers items saved before this feature
+  // existed, or a previous failure).
+  if (it && !(it.tldr && it.tldr.length) && it.tldrState !== 'pending') {
+    requestTldr(id, it.url, it.title);
+  } else {
+    renderLater();
+  }
+};
+
+window.retryTldr = function(id) {
+  const it = sharedState.later.find(a => a.id === id);
+  if (it) { tldrOpen.add(id); requestTldr(id, it.url, it.title); }
+};
+
+function tldrToggleBtn(a) {
+  const busy = a.tldrState === 'pending' && !(a.tldr && a.tldr.length);
+  return `<button class="list-btn tldr-toggle" onclick="toggleTldr('${a.id}')">${
+    tldrOpen.has(a.id) ? '▾' : '▸'} ${busy ? 'Summarizing…' : 'TL;DR'}</button>`;
+}
+
+function tldrPanel(a) {
+  if (!tldrOpen.has(a.id)) return '';
+  const regen = (title) =>
+    `<button class="tldr-regen-icon" onclick="retryTldr('${a.id}')" title="${title}" aria-label="${title}">↻</button>`;
+  let inner;
+  if (a.tldr && a.tldr.length) {
+    inner = regen('Regenerate')
+      + `<ul class="tldr-list">${a.tldr.map(b => `<li>${escapeAttr(b)}</li>`).join('')}</ul>`
+      + (a.bottomLine ? `<p class="tldr-bottom"><span>Bottom line:</span> ${escapeAttr(a.bottomLine)}</p>` : '');
+  } else if (a.tldrState === 'pending') {
+    inner = '<p class="tldr-status">Summarizing…</p>';
+  } else {
+    inner = regen('Retry') + '<p class="tldr-status">Couldn\'t summarize.</p>';
+  }
+  return `<div class="tldr-panel">${inner}</div>`;
+}
+
+function renderLater() {
+  const all   = sharedState.later;
+  const later = currentCat === 'all' ? all : all.filter(a => a.category === currentCat);
+  const el    = document.getElementById('later-content');
+
+  if (all.length === 0) {
+    el.innerHTML = '<p class="empty">No articles saved for later.</p>';
+    return;
+  }
+
+  const sorted = [...later].reverse();
+  el.innerHTML = `
+    <input type="search" class="list-search" placeholder="Search saved articles…"
+           value="${escapeAttr(laterSearchQuery)}"
+           oninput="onLaterSearchInput(this.value)">
+    <div class="list-meta">
+      <span id="later-count">${all.length} article${all.length===1?'':'s'} saved</span>
+      <button class="list-clear" onclick="clearLater()">Clear all</button>
+    </div>
+    ${sorted.length === 0 ? '<p class="empty">Nothing in this category.</p>' : sorted.map(a => `
+      <div class="list-row" id="later-row-${a.id}">
+        <div class="list-main">
+          <div class="list-source">${a.source}</div>
+          <div class="list-title"><a href="${a.url}" target="_blank" rel="noopener" onclick="openLaterArticle('${a.id}')">${a.title}</a></div>
+          <div class="list-url">${a.url}</div>
+          <div class="list-time">Saved ${formatDateTime(a.savedAt)}</div>
+          ${tldrPanel(a)}
+        </div>
+        <div class="list-actions">
+          ${tldrToggleBtn(a)}
+          <button class="list-btn" data-title="${a.title.replace(/"/g,'&quot;')}" data-url="${a.url}" onclick="copyArticle(this.dataset.title,this.dataset.url,this)">Copy</button>
+          <button class="list-btn remove" onclick="removeFromLater('${a.id}')">Remove</button>
+        </div>
+      </div>
+    `).join('')}
+    <p class="search-empty">No matches.</p>
+  `;
+  applyListSearch('later-content', laterSearchQuery);
+}
+
+function clearLater() {
+  sharedState.later.forEach(a => sharedState.readIds.add(a.id));
+  sharedState.later = [];
+  saveSharedState().catch(() => {});
+  updateBadges();
+  renderLater();
+  buildCatNav();
+}
+
+/* ── Render History ───────────────────────────────────── */
+function renderHistory() {
+  const all   = historyItems();
+  const hist  = currentCat === 'all' ? all : all.filter(a => a.category === currentCat);
+  const el    = document.getElementById('history-content');
+
+  if (all.length === 0) {
+    el.innerHTML = `<p class="empty">No articles viewed in the last ${HISTORY_DAYS} days.</p>`;
+    return;
+  }
+
+  const sorted = [...hist].sort((a, b) => new Date(b.viewedAt) - new Date(a.viewedAt));
+  el.innerHTML = `
+    <input type="search" class="list-search" placeholder="Search history…"
+           value="${escapeAttr(historySearchQuery)}"
+           oninput="onHistorySearchInput(this.value)">
+    <div class="list-meta">
+      <span>${all.length} article${all.length===1?'':'s'} viewed in last ${HISTORY_DAYS} days</span>
+      <button class="list-clear" onclick="clearHistory()">Clear</button>
+    </div>
+    ${sorted.length === 0 ? '<p class="empty">Nothing in this category.</p>' : sorted.map(a => `
+      <div class="list-row">
+        <div class="list-main">
+          <div class="list-source">${a.source || ''}</div>
+          <div class="list-title"><a href="${a.url}" target="_blank" rel="noopener">${a.title}</a></div>
+          <div class="list-url">${a.url}</div>
+          <div class="list-time">Viewed at ${formatTime(a.viewedAt)}</div>
+        </div>
+        <div class="list-actions">
+          <button class="list-btn" data-title="${a.title.replace(/"/g,'&quot;')}" data-url="${a.url}" onclick="copyArticle(this.dataset.title,this.dataset.url,this)">Copy</button>
+        </div>
+      </div>
+    `).join('')}
+    <p class="search-empty">No matches.</p>
+  `;
+  applyListSearch('history-content', historySearchQuery);
+}
+
+function clearHistory() {
+  // Server already prunes anything outside the window, so anything still
+  // in state is in-window — wiping the array clears everything visible.
+  sharedState.history = [];
+  saveSharedState().catch(() => {});
+  updateBadges();
+  renderHistory();
+  buildCatNav();
+}
+
+/* ── Settings: feed management ────────────────────────── */
+let feedsList = [];
+let feedFormUrl = '';
+let feedFormSource = '';
+let feedFormCategory = '';
+let feedFormStatus = { kind: 'idle', message: '' };
+
+// In-session undo for removals — cleared on page reload, never persisted.
+// Each entry is { feed, stats } so we can restore both the feeds.json entry
+// and the sourceStats counters that the server wiped on remove.
+let recentRemoves = [];
+
+// Sort state for the Feeds table. The "natural" direction is asc for text
+// columns and desc for numeric — clicking a column the first time picks that
+// direction, clicking the same column again toggles.
+let feedsTableSort = { col: 'activity', dir: 'desc' };
+const FEED_SORT_NATURAL = {
+  source: 'asc', category: 'asc',
+  opens: 'desc', saves: 'desc', dismisses: 'desc',
+  affinity: 'desc', activity: 'desc',
+};
+
+window.sortFeedsTable = function(col) {
+  if (feedsTableSort.col === col) {
+    feedsTableSort.dir = feedsTableSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    feedsTableSort.col = col;
+    feedsTableSort.dir = FEED_SORT_NATURAL[col] || 'desc';
+  }
+  renderFeedsTable();
+};
+
+window.onFeedUrlInput    = function(v) { feedFormUrl = v; };
+window.onFeedSourceInput = function(v) { feedFormSource = v; };
+window.onFeedCatChange   = function(v) { feedFormCategory = v; };
+
+function feedFormSetStatus(kind, message) {
+  feedFormStatus = { kind, message };
+  const el = document.getElementById('feed-form-status');
+  if (!el) return;
+  el.className = 'feed-status ' + kind;
+  el.textContent = message;
+}
+
+function feedFormSetDisabled(disabled) {
+  ['feed-url-input', 'feed-source-input', 'feed-cat-input', 'feed-validate-btn', 'feed-add-btn']
+    .forEach(id => { const e = document.getElementById(id); if (e) e.disabled = disabled; });
+}
+
+window.validateFeed = async function() {
+  const url = (feedFormUrl || '').trim();
+  if (!url) { feedFormSetStatus('err', 'Enter a URL first'); return; }
+  feedFormSetStatus('muted', 'Validating…');
+  feedFormSetDisabled(true);
+  try {
+    const res = await fetch(`/feeds/check?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    if (data.ok) {
+      const titleNote = data.title ? ` — "${data.title}"` : '';
+      feedFormSetStatus('ok', `Valid ${(data.kind || '').toUpperCase()} feed${titleNote}`);
+      // Auto-fill source if the user hasn't typed one yet.
+      if (!feedFormSource && data.title) {
+        feedFormSource = data.title;
+        const src = document.getElementById('feed-source-input');
+        if (src) src.value = data.title;
+      }
+    } else {
+      feedFormSetStatus('err', data.error || 'Validation failed');
+    }
+  } catch (e) {
+    feedFormSetStatus('err', 'Request failed: ' + (e.message || e));
+  } finally {
+    feedFormSetDisabled(false);
+  }
+};
+
+window.addFeed = async function() {
+  const url = (feedFormUrl || '').trim();
+  const source = (feedFormSource || '').trim();
+  const category = (feedFormCategory || '').trim();
+  if (!url || !source || !category) {
+    feedFormSetStatus('err', 'URL, source, and category are all required');
+    return;
+  }
+  feedFormSetStatus('muted', 'Adding…');
+  feedFormSetDisabled(true);
+  try {
+    const res = await fetch('/feeds', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, source, category }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    // Reset the form on success.
+    feedFormUrl = ''; feedFormSource = ''; feedFormCategory = '';
+    ['feed-url-input', 'feed-source-input'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+    const cat = document.getElementById('feed-cat-input'); if (cat) cat.value = '';
+    feedFormSetStatus('ok', `Added “${data.source}”. New articles will appear after the next scheduled run.`);
+    await refreshFeedsList();
+  } catch (e) {
+    feedFormSetStatus('err', e.message || String(e));
+  } finally {
+    feedFormSetDisabled(false);
+  }
+};
+
+window.removeFeed = async function(url) {
+  if (!url) return;
+  if (!confirm(`Remove this feed?\n\n${url}`)) return;
+  // Treat the DELETE as a pending save so an in-flight refreshFromRemote
+  // can't apply a stale GET (taken before the delete) and resurrect the
+  // ghost row. This piggybacks on the existing race guard.
+  pendingRemoteSave = true;
+  let succeeded = false;
+  try {
+    const res = await fetch(`/feeds?url=${encodeURIComponent(url)}`, { method: 'DELETE' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    // Server already wiped sourceStats[source] — mirror locally so we don't
+    // flash the ghost row before the next state sync.
+    if (data.removed && data.removed.source && sharedState.sourceStats) {
+      delete sharedState.sourceStats[data.removed.source];
+      saveLocalState(sharedState);
+    }
+    if (data.removed) {
+      recentRemoves.push({ feed: data.removed, stats: data.stats || null });
+    }
+    succeeded = true;
+  } catch (e) {
+    alert('Failed to remove: ' + (e.message || e));
+  } finally {
+    pendingRemoteSave = false;
+    if (queuedRemoteSave) {
+      queuedRemoteSave = false;
+      saveSharedState().catch(() => {});
+    }
+  }
+  if (succeeded) {
+    await refreshFeedsList();
+    renderRecentRemoves();
+  }
+};
+
+window.undoRemove = async function(idx) {
+  const entry = recentRemoves[idx];
+  if (!entry) return;
+  pendingRemoteSave = true;
+  let succeeded = false;
+  try {
+    // skip_validate — the URL was verified at original-add time and a
+    // flaky revalidation shouldn't block an undo.
+    const res = await fetch('/feeds?skip_validate=1', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry.feed),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    // Restore the stats locally and push them up through the normal save
+    // path so the server (and any other devices) pick them back up.
+    if (entry.stats && entry.feed && entry.feed.source) {
+      if (!sharedState.sourceStats) sharedState.sourceStats = {};
+      sharedState.sourceStats[entry.feed.source] = entry.stats;
+      saveLocalState(sharedState);
+    }
+    recentRemoves.splice(idx, 1);
+    succeeded = true;
+  } catch (e) {
+    alert('Failed to restore: ' + (e.message || e));
+  } finally {
+    pendingRemoteSave = false;
+    if (queuedRemoteSave) {
+      queuedRemoteSave = false;
+      saveSharedState().catch(() => {});
+    }
+  }
+  if (succeeded) {
+    // Ensure the restored stats reach the server via a fresh PUT.
+    if (entry.stats) saveSharedState().catch(() => {});
+    await refreshFeedsList();
+    renderRecentRemoves();
+  }
+};
+
+function renderRecentRemoves() {
+  const wrap = document.getElementById('recent-removes-wrap');
+  if (!wrap) return;
+  if (recentRemoves.length === 0) {
+    wrap.innerHTML = '';
+    return;
+  }
+  wrap.innerHTML = `
+    <div class="recent-removes">
+      <div class="recent-removes-label">Recently removed — restorable until page reload</div>
+      <div class="recent-removes-items">
+        ${recentRemoves.map((entry, i) => `
+          <span class="recent-remove-pill">
+            <span class="recent-remove-name">${escapeAttr(entry.feed.source || entry.feed.url || '')}</span>
+            <button class="recent-remove-undo" onclick="undoRemove(${i})">Restore</button>
+          </span>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+async function refreshFeedsList() {
+  try {
+    const res = await fetch('/feeds');
+    if (res.ok) feedsList = await res.json();
+  } catch (e) {
+    // Keep last-known list on failure so the table doesn't blank out.
+  }
+  renderFeedsTable();
+}
+
+// Unified table: configured feeds + sources with recorded activity (the
+// latter as "ghost" rows when a feed has been removed but its stats survive).
+// Lets the user see "this source has high dismisses" and remove it without
+// scrolling to a separate section.
+function renderFeedsTable() {
+  const wrap = document.getElementById('feed-table-wrap');
+  if (!wrap) return;
+
+  const stats = sharedState.sourceStats || {};
+  const bySource = new Map(feedsList.map(f => [f.source, f]));
+  const allSources = new Set([...bySource.keys(), ...Object.keys(stats)]);
+
+  const rows = [...allSources].map(source => {
+    const feed = bySource.get(source);
+    const s = stats[source] || { opens: 0, saves: 0, dismisses: 0 };
+    let site = null;
+    if (feed && feed.url) { try { site = new URL(feed.url).origin; } catch (e) {} }
+    return {
+      source,
+      url: feed ? feed.url : null,
+      site,
+      category: feed ? feed.category : null,
+      opens: s.opens, saves: s.saves, dismisses: s.dismisses,
+      affinity: affinityFor(source),
+      activity: s.opens + s.saves + s.dismisses,
+      isConfigured: !!feed,
+    };
+  });
+
+  // Ghosts always sit at the bottom regardless of sort — they're historical
+  // and not actionable. Within each group (configured / ghost), apply the
+  // user's chosen column + direction.
+  const dirMult = feedsTableSort.dir === 'desc' ? -1 : 1;
+  const sortKey = (r) => {
+    const c = feedsTableSort.col;
+    if (c === 'source')   return r.source.toLowerCase();
+    if (c === 'category') return r.category ? (CATS[r.category]?.label || r.category).toLowerCase() : '￿';
+    return r[c]; // numeric
+  };
+  rows.sort((a, b) => {
+    if (a.isConfigured !== b.isConfigured) return a.isConfigured ? -1 : 1;
+    const ka = sortKey(a), kb = sortKey(b);
+    if (ka < kb) return -dirMult;
+    if (ka > kb) return dirMult;
+    return a.source.localeCompare(b.source); // stable tie-break
+  });
+
+  // Keep the count chip in the section header in sync with the feed list.
+  const totalEl = document.getElementById('feed-total-count');
+  if (totalEl) totalEl.textContent = `${feedsList.length} configured`;
+
+  if (rows.length === 0) {
+    wrap.innerHTML = '<p class="empty" style="padding: 12px 0;">No feeds yet. Add one above.</p>';
+    return;
+  }
+
+  const fmt1 = (n) => (Math.round(n * 10) / 10).toFixed(1).replace(/\.0$/, '');
+  const th = (col, label, numeric = false) => {
+    const active = feedsTableSort.col === col;
+    const arrow  = active ? (feedsTableSort.dir === 'desc' ? '▼' : '▲') : '';
+    return `<th class="sortable${active ? ' active' : ''}${numeric ? ' num' : ''}" onclick="sortFeedsTable('${col}')">${label}<span class="sort-arrow">${arrow}</span></th>`;
+  };
+
+  wrap.innerHTML = `
+    <table class="stats-table">
+      <thead>
+        <tr>
+          ${th('source', 'Source')}
+          ${th('category', 'Category')}
+          ${th('opens', 'Opens', true)}
+          ${th('saves', 'Saves', true)}
+          ${th('dismisses', 'Dismisses', true)}
+          ${th('affinity', 'Affinity', true)}
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(r => {
+          const affClass = r.affinity > 1.05 ? 'aff-up' : r.affinity < 0.95 ? 'aff-down' : 'aff-neutral';
+          const z = (n) => n === 0 ? ' zero' : '';
+          const catCell = r.category
+            ? escapeAttr(CATS[r.category]?.label || r.category)
+            : '<span class="cat-dash">—</span>';
+          const actionCell = r.isConfigured
+            ? `<button class="cat-del" data-url="${escapeAttr(r.url)}" onclick="removeFeed(this.dataset.url)" aria-label="Remove feed" title="Remove feed">✕</button>`
+            : '<span class="ghost-tag">removed</span>';
+          return `
+            <tr${r.isConfigured ? '' : ' class="ghost-row"'}>
+              <td>
+                ${r.site
+                  ? `<a class="feed-cell-name feed-site-link" href="${escapeAttr(r.site)}" target="_blank" rel="noopener" title="Visit ${escapeAttr(r.site)}">${escapeAttr(r.source)}<span class="ext">↗</span></a>`
+                  : `<div class="feed-cell-name">${escapeAttr(r.source)}</div>`}
+                ${r.url ? `<div class="feed-cell-url" title="${escapeAttr(r.url)}">${escapeAttr(r.url)}</div>` : ''}
+              </td>
+              <td>${catCell}</td>
+              <td class="num${z(r.opens)}">${fmt1(r.opens)}</td>
+              <td class="num${z(r.saves)}">${fmt1(r.saves)}</td>
+              <td class="num${z(r.dismisses)}">${fmt1(r.dismisses)}</td>
+              <td class="num ${affClass}">${r.affinity.toFixed(2)}×</td>
+              <td class="actions">${actionCell}</td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+/* ── Render Runs (pipeline execution log) ─────────────── */
+function renderRunsPane(pane) {
+  pane.innerHTML = `
+    <div class="runs-bar">
+      <p class="cfg-help" style="margin:0;">Gather &amp; rank runs in the last 24 hours. Failures are flagged in red.</p>
+      <button class="list-btn" onclick="refreshRuns()">Refresh</button>
+    </div>
+    <div id="runs-wrap"><p class="empty" style="padding:16px 0;">Loading…</p></div>`;
+  refreshRuns();
+}
+
+async function refreshRuns() {
+  const wrap = document.getElementById('runs-wrap');
+  if (!wrap) return;
+  let runs = [], status = {};
+  try {
+    const [rr, rs] = await Promise.all([
+      fetch('/runs', { cache: 'no-store' }),
+      fetch('/status', { cache: 'no-store' }),
+    ]);
+    runs = await rr.json();
+    status = await rs.json();
+  } catch (e) {
+    wrap.innerHTML = '<p class="empty" style="padding:16px 0;">Could not load run history.</p>';
+    return;
+  }
+  renderRunsTable(wrap, Array.isArray(runs) ? runs : [], status || {});
+}
+window.refreshRuns = refreshRuns;
+
+function fmtDuration(s) {
+  if (s == null) return '—';
+  if (s < 60) return `${Math.round(s)}s`;
+  return `${Math.floor(s / 60)}m ${Math.round(s % 60)}s`;
+}
+
+// Derive Ollama health from a run's scoring metrics: distinguishes Ollama being
+// down (many fallbacks), running on CPU (model not in VRAM / high latency), and
+// healthy. Returns null when the run did no scoring (empty / carried-only).
+function runHealth(r) {
+  const sc = r.scored_count || 0;
+  if (!sc) return null;
+  const fb = r.score_fallbacks || 0;
+  const avgS = r.avg_score_ms != null ? r.avg_score_ms / 1000 : null;
+  const gpu = r.gpu_ratio;                       // null if unknown
+  const per = avgS != null ? `${avgS.toFixed(1)}s/story` : '';
+  if (fb >= Math.max(3, sc * 0.5))
+    return { level: 'bad', label: 'Ollama down?', detail: `${fb}/${sc} scoring calls failed — Ollama may be down (restart it)` };
+  if (fb > 0)
+    return { level: 'warn', label: `${fb} errors`, detail: `${fb}/${sc} scoring calls failed${per ? ' · ' + per : ''}` };
+  if (gpu != null && gpu < 0.9)
+    return { level: 'bad', label: 'on CPU', detail: `chat model only ${Math.round(gpu * 100)}% in VRAM${per ? ' · ' + per : ''} — GPU dropped?` };
+  if (avgS != null && avgS >= 12)
+    return { level: 'warn', label: 'slow', detail: `${per} — possibly running on CPU` };
+  return { level: 'ok', label: per || 'ok', detail: gpu === 1 ? 'model on GPU' : '' };
+}
+
+function renderRunsTable(wrap, runs, status) {
+  const cutoff = Date.now() - 24 * 3600 * 1000;
+  const recent = runs
+    .filter(r => { const t = Date.parse(r.started_at); return !isNaN(t) && t >= cutoff; })
+    .sort((a, b) => Date.parse(b.started_at) - Date.parse(a.started_at));
+
+  const liveRow = status && status.running ? `
+    <tr class="run-live">
+      <td>${status.started_at ? formatDateTime(status.started_at) : 'now'}</td>
+      <td><span class="run-badge running">running${status.phase ? ' · ' + status.phase : ''}</span></td>
+      <td class="num">—</td>
+      <td class="num">${status.feed_count == null ? '—' : status.feed_count}</td>
+      <td class="num">—</td>
+      <td class="num">—</td>
+      <td>—</td>
+    </tr>` : '';
+
+  if (!recent.length && !liveRow) {
+    wrap.innerHTML = '<p class="empty" style="padding:16px 0;">No runs in the last 24 hours.</p>';
+    return;
+  }
+
+  // Health banner from the most recent run that actually scored via Ollama.
+  const lastScored = recent.find(r => (r.scored_count || 0) > 0);
+  const h = lastScored ? runHealth(lastScored) : null;
+  const banner = !h ? '' :
+    h.level !== 'ok'
+      ? `<div class="run-banner ${h.level}">⚠ Ollama ${h.label} — ${h.detail}</div>`
+      : `<div class="run-banner ok">✓ Ollama healthy — last run ${h.label}${h.detail ? ', ' + h.detail : ''}</div>`;
+
+  const failures = recent.filter(r => r.status === 'failed').length;
+  const badge = (r) =>
+    r.status === 'ok'     ? '<span class="run-badge ok">OK</span>' :
+    r.status === 'failed' ? '<span class="run-badge fail">Failed</span>' :
+                            '<span class="run-badge empty">No new</span>';
+  const cell = (v) => (v == null ? '—' : v);
+  const ollamaCell = (r) => {
+    const hh = runHealth(r);
+    if (!hh) return '<span class="run-ollama na">—</span>';
+    return `<span class="run-ollama ${hh.level}" title="${escapeAttr(hh.detail || hh.label)}">${hh.label}</span>`;
+  };
+
+  wrap.innerHTML = `
+    ${banner}
+    <div class="run-summary">${recent.length} run${recent.length === 1 ? '' : 's'} in the last 24h${failures ? ` · <span class="run-fail-note">${failures} failed</span>` : ''}</div>
+    <table class="stats-table runs-table">
+      <thead>
+        <tr><th>Started</th><th>Result</th><th class="num">Took</th><th class="num">Feeds</th><th class="num">Gathered</th><th class="num">In digest</th><th>Ollama</th></tr>
+      </thead>
+      <tbody>
+        ${liveRow}
+        ${recent.map(r => `
+          <tr>
+            <td>${formatDateTime(r.started_at)}</td>
+            <td>${badge(r)}${r.error ? `<div class="run-err" title="${escapeAttr(r.error)}">${escapeAttr(r.error)}</div>` : ''}</td>
+            <td class="num">${fmtDuration(r.duration_s)}</td>
+            <td class="num">${cell(r.feed_count)}</td>
+            <td class="num">${cell(r.new_count)}</td>
+            <td class="num">${cell(r.article_count)}</td>
+            <td>${ollamaCell(r)}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+/* ── Settings: category editor ────────────────────────── */
+let catEditList = null;   // working copy while editing
+
+function renderCategoriesPane(pane) {
+  pane.innerHTML = '<p class="cfg-help" style="padding:16px 0;">Loading…</p>';
+  fetch('/categories', { cache: 'no-store' })
+    .then(r => r.json())
+    .then(list => { catEditList = (Array.isArray(list) ? list : []).map(c => ({ ...c })); drawCatEditor(); })
+    .catch(() => { pane.innerHTML = '<p class="empty" style="padding:16px 0;">Could not load categories.</p>'; });
+}
+
+function drawCatEditor() {
+  const pane = document.getElementById('settings-pane');
+  if (!pane || !catEditList) return;
+  const rows = catEditList.map((c, i) => `
+    <div class="cat-row">
+      <div class="cat-move-col">
+        <button class="cat-move" ${i === 0 ? 'disabled' : ''} onclick="moveCat(${i},-1)" aria-label="Move up">↑</button>
+        <button class="cat-move" ${i === catEditList.length - 1 ? 'disabled' : ''} onclick="moveCat(${i},1)" aria-label="Move down">↓</button>
+      </div>
+      <input type="color" class="cat-color" value="${escapeAttr(c.color || '#8a90a0')}" oninput="editCat(${i},'color',this.value)" title="Colour">
+      <div class="cat-fields">
+        <div class="cat-row-top">
+          <input class="cat-input cat-label" placeholder="Label (e.g. Cooking)" value="${escapeAttr(c.label || '')}" oninput="editCat(${i},'label',this.value)">
+          <input class="cat-input cat-key" placeholder="key" value="${escapeAttr(c.key || '')}" oninput="editCat(${i},'key',this.value)" title="lowercase id used in feeds & data">
+          <button class="cat-del" onclick="deleteCat(${i})" aria-label="Remove category">✕</button>
+        </div>
+        <input class="cat-input cat-interest" placeholder="What you want here — a real sentence; the scorer ranks against it" value="${escapeAttr(c.interest || '')}" oninput="editCat(${i},'interest',this.value)">
+      </div>
+    </div>`).join('');
+  pane.innerHTML = `
+    <div class="settings-section">
+      <div class="settings-help">
+        Categories define what the digest is about. The <b>interest</b> line is woven into the scorer's
+        prompt — write a real sentence about what you actually want in that bucket; that's what makes
+        ranking good. Order = priority. Changes apply on the next run.
+      </div>
+      <div class="cat-list">${rows || '<p class="cfg-help">No categories yet — add one below.</p>'}</div>
+      <button class="feed-btn" onclick="addCat()">+ Add category</button>
+      <div class="cfg-actions" style="margin-top:18px;">
+        <button class="feed-btn primary" onclick="saveCategories()">Save categories</button>
+        <span class="cfg-status" id="cfg-status-cats"></span>
+      </div>
+    </div>`;
+}
+
+window.editCat = (i, field, val) => { if (catEditList[i]) catEditList[i][field] = val; };
+window.moveCat = (i, dir) => {
+  const j = i + dir;
+  if (j < 0 || j >= catEditList.length) return;
+  [catEditList[i], catEditList[j]] = [catEditList[j], catEditList[i]];
+  drawCatEditor();
+};
+window.deleteCat = (i) => { catEditList.splice(i, 1); drawCatEditor(); };
+window.addCat = () => { catEditList.push({ key: '', label: '', color: '#8a90a0', interest: '' }); drawCatEditor(); };
+
+window.saveCategories = async () => {
+  const cleaned = catEditList.map(c => ({
+    key: (c.key || '').trim().toLowerCase(),
+    label: (c.label || '').trim(),
+    color: c.color || '#8a90a0',
+    interest: (c.interest || '').trim(),
+  })).filter(c => c.key);
+  const keys = cleaned.map(c => c.key);
+  if (!cleaned.length) return setCfgStatus('cats', 'err', 'Add at least one category.');
+  if (new Set(keys).size !== keys.length) return setCfgStatus('cats', 'err', 'Keys must be unique.');
+  if (keys.some(k => !/^[a-z0-9]{1,20}$/.test(k))) return setCfgStatus('cats', 'err', 'Keys: lowercase letters/numbers only, no spaces.');
+  if (cleaned.some(c => !c.label)) return setCfgStatus('cats', 'err', 'Every category needs a label.');
+  setCfgStatus('cats', 'muted', 'Saving…');
+  try {
+    const res = await fetch('/categories', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cleaned) });
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || ('HTTP ' + res.status)); }
+    const saved = await res.json();
+    catEditList = saved.map(c => ({ ...c }));
+    buildCats(saved);   // nav + card colours update live for when you return to Home
+    drawCatEditor();
+    setCfgStatus('cats', 'ok', 'Saved — applies on the next run.');
+  } catch (e) { setCfgStatus('cats', 'err', e.message || String(e)); }
+};
+
+/* ── Render Settings (sub-tabbed) ─────────────────────── */
+const SETTINGS_TABS = [
+  { id: 'feeds',      label: 'Feeds' },
+  { id: 'categories', label: 'Categories' },
+  { id: 'filters',    label: 'Filters' },
+  { id: 'models',     label: 'Models' },
+  { id: 'tuning',     label: 'Tuning' },
+  { id: 'runs',       label: 'Runs' },
+  { id: 'about',      label: 'About' },
+];
+let settingsTab = 'feeds';
+
+function renderSettings() {
+  const el = document.getElementById('settings-content');
+  if (!el) return;
+  el.innerHTML = `
+    <nav class="subtabs" aria-label="Settings sections">
+      ${SETTINGS_TABS.map(t =>
+        `<button class="subtab${t.id === settingsTab ? ' active' : ''}" onclick="switchSettingsTab('${t.id}')">${t.label}</button>`
+      ).join('')}
+    </nav>
+    <div id="settings-pane"></div>
+  `;
+  renderSettingsPane();
+}
+
+window.switchSettingsTab = function(tab) {
+  settingsTab = tab;
+  renderSettings();
+};
+
+function renderSettingsPane() {
+  const pane = document.getElementById('settings-pane');
+  if (!pane) return;
+  if (settingsTab === 'feeds') { renderFeedsPane(pane); return; }
+  if (settingsTab === 'categories') { renderCategoriesPane(pane); return; }
+  if (settingsTab === 'runs')  { renderRunsPane(pane); return; }
+
+  // Every other tab needs /settings (and Models also needs /models).
+  if (!appSettings || !appSettingsSchema || (settingsTab === 'models' && !availableModels)) {
+    pane.innerHTML = '<p class="empty" style="padding:16px 0;">Loading settings…</p>';
+    ensureSettingsData().then(() => {
+      // Only re-render if the user is still on a tab that needed the data.
+      if (settingsTab !== 'feeds') renderSettingsPane();
+    });
+    return;
+  }
+
+  if (settingsTab === 'filters') {
+    renderFiltersPane(pane);
+  } else if (settingsTab === 'models') {
+    renderModelsPane(pane);
+  } else if (settingsTab === 'tuning') {
+    pane.innerHTML = [
+      renderNumericGroup('cluster', 'Clustering & ranking'),
+      renderNumericGroup('ingestion', 'Ingestion'),
+      renderNumericGroup('schedule', 'Schedule'),
+      renderNumericGroup('retention', 'Retention'),
+      renderApplyFooter(),
+    ].join('');
+  } else if (settingsTab === 'about') {
+    pane.innerHTML = renderAboutPane();
+  }
+}
+
+function renderFeedsPane(pane) {
+  const catOptions = Object.keys(CATS)
+    .filter(k => k !== 'all')
+    .map(k => `<option value="${k}"${feedFormCategory === k ? ' selected' : ''}>${CATS[k].label}</option>`)
+    .join('');
+  pane.innerHTML = `
+    <div class="settings-section">
+      <div class="settings-h">Feeds <span class="settings-h-count" id="feed-total-count">${feedsList.length} configured</span></div>
+      <div class="settings-help">Add or remove RSS/Atom feeds. New feeds appear in the digest after the next run.</div>
+      <div class="feed-form">
+        <div class="feed-form-row">
+          <input class="feed-input" id="feed-url-input" type="url"
+                 placeholder="https://example.com/feed.xml"
+                 value="${escapeAttr(feedFormUrl)}"
+                 oninput="onFeedUrlInput(this.value)">
+          <button class="feed-btn" id="feed-validate-btn" onclick="validateFeed()">Validate</button>
+        </div>
+        <div class="feed-form-row">
+          <input class="feed-input" id="feed-source-input" type="text"
+                 placeholder="Source name (auto-fills after validate)"
+                 value="${escapeAttr(feedFormSource)}"
+                 oninput="onFeedSourceInput(this.value)">
+          <select class="feed-select" id="feed-cat-input" onchange="onFeedCatChange(this.value)">
+            <option value="">Category…</option>
+            ${catOptions}
+          </select>
+          <button class="feed-btn primary" id="feed-add-btn" onclick="addFeed()">Add feed</button>
+        </div>
+        <div class="feed-status ${feedFormStatus.kind}" id="feed-form-status">${escapeAttr(feedFormStatus.message)}</div>
+      </div>
+      <div id="feed-table-wrap"><p class="empty" style="padding: 12px 0;">Loading feeds…</p></div>
+      <div id="recent-removes-wrap"></div>
+      <div class="opml-bar">
+        Bulk:
+        <button class="linklike" onclick="document.getElementById('opml-file').click()">Import OPML</button>·
+        <a class="linklike" href="/feeds.opml">Export OPML</a>
+        <input type="file" id="opml-file" accept=".opml,.xml,text/xml,application/xml" style="display:none" onchange="onOpmlFile(this)">
+      </div>
+    </div>
+  `;
+  refreshFeedsList();
+  renderRecentRemoves();
+}
+
+/* ── OPML import wizard ───────────────────────────────── */
+let opmlFeeds = [];      // [{url, source, folder}] parsed from the file
+let opmlFolders = [];    // distinct folder names, in order
+let opmlMap = {};        // folder -> existing category key | '__create__' | '__skip__'
+let opmlValidate = true;
+
+const CAT_PALETTE = ['#7b5cff','#2b7fff','#ff5a3c','#10b981','#d98a3b','#e84d9c',
+                     '#3fae46','#06b6d4','#8a90a0','#e8482b','#f59e0b','#14b8a6'];
+const slugKey = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20);
+function pickCatColor(used) {
+  for (const c of CAT_PALETTE) if (!used.has(c)) return c;
+  return CAT_PALETTE[(opmlFolders.length) % CAT_PALETTE.length];
+}
+
+// Parse an OPML/XML string into feeds with their folder (category) name.
+function parseOpml(text) {
+  const doc = new DOMParser().parseFromString(text, 'application/xml');
+  if (doc.querySelector('parsererror')) throw new Error('That doesn’t look like a valid OPML/XML file.');
+  const out = [], seen = new Set();
+  doc.querySelectorAll('outline[xmlUrl]').forEach(o => {
+    const url = (o.getAttribute('xmlUrl') || '').trim();
+    if (!url || seen.has(url)) return;
+    seen.add(url);
+    const source = (o.getAttribute('title') || o.getAttribute('text') || url).trim();
+    const p = o.parentElement;
+    const folder = (p && p.tagName.toLowerCase() === 'outline' && !p.getAttribute('xmlUrl'))
+      ? (p.getAttribute('title') || p.getAttribute('text') || '').trim() : '';
+    out.push({ url, source, folder });
+  });
+  return out;
+}
+
+window.onOpmlFile = function(input) {
+  const file = input.files && input.files[0];
+  input.value = '';
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let feeds;
+    try { feeds = parseOpml(reader.result); }
+    catch (e) { alert(e.message || 'Could not parse the file.'); return; }
+    if (!feeds.length) { alert('No feeds (<outline xmlUrl="…">) were found in that file.'); return; }
+    openImportWizard(feeds);
+  };
+  reader.readAsText(file);
+};
+
+function openImportWizard(feeds) {
+  opmlFeeds = feeds;
+  opmlValidate = true;
+  const byFolder = {};
+  opmlFolders = [];
+  for (const f of feeds) {
+    if (!(f.folder in byFolder)) { byFolder[f.folder] = []; opmlFolders.push(f.folder); }
+    byFolder[f.folder].push(f);
+  }
+  // Default mapping: reuse an existing category whose key/label matches the
+  // folder; otherwise offer to create one from the folder name.
+  const existing = Object.keys(CATS).filter(k => k !== 'all');
+  opmlMap = {};
+  for (const folder of opmlFolders) {
+    const s = slugKey(folder);
+    const match = existing.find(k => k === s || (CATS[k].label || '').toLowerCase() === folder.toLowerCase());
+    opmlMap[folder] = match || '__create__';
+  }
+  renderImportWizard(byFolder);
+}
+
+function opmlCatSelect(i) {
+  const folder = opmlFolders[i], cur = opmlMap[folder];
+  const opts = Object.keys(CATS).filter(k => k !== 'all')
+    .map(k => `<option value="${k}"${cur === k ? ' selected' : ''}>${escapeAttr(CATS[k].label)}</option>`).join('');
+  const createLabel = folder || 'Imported';
+  return `<select class="cfg-select" onchange="setOpmlMap(${i}, this.value)">
+      ${opts}
+      <option value="__create__"${cur === '__create__' ? ' selected' : ''}>＋ Create “${escapeAttr(createLabel)}”</option>
+      <option value="__skip__"${cur === '__skip__' ? ' selected' : ''}>Skip these</option>
+    </select>`;
+}
+
+function renderImportWizard(byFolder) {
+  const n = opmlFeeds.length, g = opmlFolders.length;
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'opml-modal';
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-h">Import OPML</div>
+      <div class="modal-help">${n} feed${n === 1 ? '' : 's'} in ${g} group${g === 1 ? '' : 's'}. Map each group to a category — <strong>Create</strong> makes a new one from the folder name (refine its interest description later in Settings → Categories).</div>
+      <div class="opml-groups">
+        ${opmlFolders.map((folder, i) => `
+          <div class="opml-group">
+            <div class="opml-group-name">${folder ? escapeAttr(folder) : '<em>(No folder)</em>'} <span class="opml-count">${byFolder[folder].length}</span></div>
+            ${opmlCatSelect(i)}
+          </div>`).join('')}
+      </div>
+      <label class="opml-validate"><input type="checkbox" checked onchange="opmlValidate = this.checked"> Validate each feed before adding (slower, but drops dead URLs)</label>
+      <div class="modal-actions">
+        <span class="cfg-status" id="opml-status"></span>
+        <button class="feed-btn" onclick="closeOpmlModal()">Cancel</button>
+        <button class="feed-btn primary" id="opml-import-btn" onclick="commitOpmlImport()">Import</button>
+      </div>
+    </div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) closeOpmlModal(); });
+  document.body.appendChild(modal);
+}
+
+window.setOpmlMap = function(i, v) { opmlMap[opmlFolders[i]] = v; };
+window.closeOpmlModal = function() { const m = document.getElementById('opml-modal'); if (m) m.remove(); };
+function setOpmlStatus(kind, msg) {
+  const el = document.getElementById('opml-status');
+  if (el) { el.className = 'cfg-status ' + kind; el.textContent = msg; }
+}
+
+window.commitOpmlImport = async function() {
+  const btn = document.getElementById('opml-import-btn');
+  setOpmlStatus('muted', 'Importing…');
+  if (btn) btn.disabled = true;
+  try {
+    const usedKeys = new Set(Object.keys(CATS).filter(k => k !== 'all'));
+    const usedColors = new Set(Object.values(CATS).map(c => c.c).filter(Boolean));
+    const newCats = [], folderKey = {};
+    for (const folder of opmlFolders) {
+      const choice = opmlMap[folder];
+      if (choice === '__skip__') continue;
+      if (choice === '__create__') {
+        let base = slugKey(folder) || 'imported', k = base, n = 2;
+        while (usedKeys.has(k)) k = base.slice(0, 18) + n++;
+        usedKeys.add(k);
+        const color = pickCatColor(usedColors); usedColors.add(color);
+        const label = (folder || 'Imported').slice(0, 40);
+        newCats.push({ key: k, label, color, interest: label });
+        folderKey[folder] = k;
+      } else if (CATS[choice]) {
+        folderKey[folder] = choice;
+      }
+    }
+    const feeds = opmlFeeds.filter(f => folderKey[f.folder])
+      .map(f => ({ url: f.url, source: f.source, category: folderKey[f.folder] }));
+    if (!feeds.length) { setOpmlStatus('err', 'Nothing to import — every group is skipped.'); if (btn) btn.disabled = false; return; }
+
+    if (newCats.length) {
+      const current = await fetch('/categories', { cache: 'no-store' }).then(r => r.json()).catch(() => []);
+      const merged = [...(Array.isArray(current) ? current : []), ...newCats];
+      const r = await fetch('/categories', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(merged) });
+      if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error || ('categories HTTP ' + r.status)); }
+      buildCats(await r.json());
+    }
+    const ir = await fetch('/feeds/import', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ feeds, validate: opmlValidate }) });
+    if (!ir.ok) { const e = await ir.json().catch(() => ({})); throw new Error(e.error || ('import HTTP ' + ir.status)); }
+    showOpmlSummary(await ir.json(), newCats.length);
+  } catch (e) {
+    setOpmlStatus('err', e.message || String(e));
+    if (btn) btn.disabled = false;
+  }
+};
+
+function showOpmlSummary(sum, newCatCount) {
+  const fails = [...(sum.failed || []), ...(sum.invalid || [])];
+  const modal = document.querySelector('#opml-modal .modal');
+  if (!modal) return;
+  modal.innerHTML = `
+    <div class="modal-h">Import complete</div>
+    <p class="opml-summary">Added <strong>${sum.added}</strong> feed${sum.added === 1 ? '' : 's'}${newCatCount ? `, created <strong>${newCatCount}</strong> categor${newCatCount === 1 ? 'y' : 'ies'}` : ''}.
+      ${sum.skipped_dupes ? ` Skipped ${sum.skipped_dupes} duplicate${sum.skipped_dupes === 1 ? '' : 's'}.` : ''}
+      ${fails.length ? ` ${fails.length} couldn’t be added.` : ''}
+      New feeds appear after the next run.</p>
+    ${fails.length ? `<div class="opml-fail-list">${fails.slice(0, 40).map(x => `<div class="opml-fail"><span>${escapeAttr(x.source || x.url || '?')}</span> — ${escapeAttr(x.error || 'failed')}</div>`).join('')}</div>` : ''}
+    <div class="modal-actions">
+      <button class="feed-btn primary" onclick="finishOpmlImport()">Done</button>
+    </div>`;
+}
+
+window.finishOpmlImport = function() {
+  closeOpmlModal();
+  const pane = document.getElementById('settings-pane');
+  if (pane && settingsTab === 'feeds') renderFeedsPane(pane);
+};
+
+function renderAboutPane() {
+  const lastDecay = sharedState.learning?.lastDecayAt
+    ? new Date(sharedState.learning.lastDecayAt).toLocaleDateString()
+    : 'never';
+  return [
+    renderDeploySection(),
+    `<div class="settings-section">
+      <div class="settings-h">Learning</div>
+      <div class="settings-help">
+        Source affinity nudges ranking from what you open, save, and dismiss
+        (last decay: ${lastDecay}; bounded ${AFFINITY_MIN}× – ${AFFINITY_MAX}×).
+        Resetting zeroes every counter and restores 1.00×. Syncs across devices.
+      </div>
+      <button class="list-clear" onclick="confirmResetLearning()">Reset learning</button>
+    </div>`,
+  ].join('');
+}
+
+function modelOptions(current) {
+  const models = (availableModels && availableModels.models) || [];
+  const all = models.includes(current) ? models.slice() : [current, ...models];
+  return all.map(m => `<option value="${escapeAttr(m)}"${m === current ? ' selected' : ''}>${escapeAttr(m)}</option>`).join('');
+}
+
+function renderModelsPane(pane) {
+  const s = appSettings, schema = appSettingsSchema;
+  const hasModels = availableModels && availableModels.ok && availableModels.models.length;
+  const field = (key) => {
+    const spec = schema[key];
+    const ctrl = hasModels
+      ? `<select class="cfg-select" id="cfg-${key}">${modelOptions(s[key])}</select>`
+      : `<input class="cfg-input wide" id="cfg-${key}" type="text" value="${escapeAttr(s[key])}">`;
+    return `<div class="cfg-row">
+        <label class="cfg-label" for="cfg-${key}">${spec.label}<span class="cfg-help">${spec.help}</span></label>
+        ${ctrl}
+      </div>`;
+  };
+  const note = hasModels ? '' :
+    `<div class="settings-help" style="color:var(--text3)">Couldn't list models from the Ollama host${availableModels && availableModels.error ? ' (' + escapeAttr(availableModels.error) + ')' : ''}. Enter model names manually.</div>`;
+  pane.innerHTML = `
+    <div class="settings-section">
+      <div class="settings-h">Models</div>
+      <div class="settings-help">Which Ollama models score and embed articles. The host is set in docker-compose; only the model choice lives here.</div>
+      ${note}
+      <div class="cfg-grid">${field('ollama_model')}${field('embed_model')}</div>
+      <div class="cfg-actions">
+        <button class="feed-btn primary" onclick="saveModels()">Save</button>
+        <span class="cfg-status" id="cfg-status-models"></span>
+      </div>
+    </div>
+  `;
+}
+
+window.saveModels = async function() {
+  const patch = {};
+  const chat = document.getElementById('cfg-ollama_model');
+  const embed = document.getElementById('cfg-embed_model');
+  if (chat && chat.value.trim()) patch.ollama_model = chat.value.trim();
+  if (embed && embed.value.trim()) patch.embed_model = embed.value.trim();
+  setCfgStatus('models', 'muted', 'Saving…');
+  try {
+    await saveSettings(patch);
+    setCfgStatus('models', 'ok', 'Saved — applies on the next run.');
+  } catch (e) {
+    setCfgStatus('models', 'err', e.message || String(e));
+  }
+};
+
+/* ── Settings: runtime config (tuning knobs + blocklist) ─ */
+let appSettings = null;
+let appSettingsSchema = null;
+let deployInfo = null;
+let availableModels = null;   // { ok, models:[...], error? } from GET /models
+
+async function fetchModels() {
+  try {
+    const res = await fetch('/models');
+    availableModels = await res.json();
+  } catch (e) {
+    availableModels = { ok: false, models: [], error: String(e) };
+  }
+  return availableModels;
+}
+
+// Load whatever the active settings tab needs, once.
+async function ensureSettingsData() {
+  const tasks = [];
+  if (!appSettings) tasks.push(fetchSettings().catch(() => {}));
+  if (!availableModels) tasks.push(fetchModels());
+  await Promise.all(tasks);
+}
+
+async function fetchSettings() {
+  const res = await fetch('/settings');
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  appSettings = data.settings;
+  appSettingsSchema = data.schema;
+  deployInfo = data.deploy;
+  return data;
+}
+
+async function saveSettings(patch) {
+  const res = await fetch('/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) {
+    const d = await res.json().catch(() => ({}));
+    throw new Error(d.error || `HTTP ${res.status}`);
+  }
+  const data = await res.json();
+  appSettings = data.settings;
+  appSettingsSchema = data.schema;
+  deployInfo = data.deploy;
+  return data;
+}
+
+function setCfgStatus(scope, kind, message) {
+  const el = document.getElementById('cfg-status-' + scope);
+  if (!el) return;
+  el.className = 'cfg-status ' + kind;
+  el.textContent = message;
+}
+
+function numberField(key, spec, value) {
+  const step = spec.type === 'float' ? (spec.step || 0.01) : 1;
+  return `<div class="cfg-row">
+    <label class="cfg-label" for="cfg-${key}">${spec.label}
+      <span class="cfg-help">${spec.help || ''}</span>
+    </label>
+    <input class="cfg-input" id="cfg-${key}" type="number"
+           min="${spec.min}" max="${spec.max}" step="${step}" value="${value}">
+  </div>`;
+}
+
+function renderNumericGroup(group, title) {
+  const entries = Object.entries(appSettingsSchema)
+    .filter(([, s]) => s.group === group && s.type !== 'list');
+  if (!entries.length) return '';
+  return `<div class="settings-section">
+    <div class="settings-h">${title}</div>
+    <div class="cfg-grid">
+      ${entries.map(([key, spec]) => numberField(key, spec, appSettings[key])).join('')}
+    </div>
+    <div class="cfg-actions">
+      <button class="feed-btn primary" onclick="saveConfigGroup('${group}')">Save</button>
+      <span class="cfg-status" id="cfg-status-${group}"></span>
+    </div>
+  </div>`;
+}
+
+window.saveConfigGroup = async function(group) {
+  const patch = {};
+  for (const [key, spec] of Object.entries(appSettingsSchema)) {
+    if (spec.group === group && spec.type !== 'list') {
+      const el = document.getElementById('cfg-' + key);
+      if (el && el.value !== '') {
+        patch[key] = spec.type === 'float' ? parseFloat(el.value) : parseInt(el.value, 10);
+      }
+    }
+  }
+  setCfgStatus(group, 'muted', 'Saving…');
+  try {
+    await saveSettings(patch);
+    // Reflect any server-side clamping back into the inputs.
+    for (const [key, spec] of Object.entries(appSettingsSchema)) {
+      if (spec.group === group && spec.type !== 'list') {
+        const el = document.getElementById('cfg-' + key);
+        if (el) el.value = appSettings[key];
+      }
+    }
+    setCfgStatus(group, 'ok', 'Saved — applies on the next run.');
+  } catch (e) {
+    setCfgStatus(group, 'err', e.message || String(e));
+  }
+};
+
+function blockChips(key, terms) {
+  if (!terms.length) {
+    const msg = key === 'block_topics'
+      ? 'No blocked topics yet. (Keyword and built-in spam filtering still apply.)'
+      : 'No custom keywords. The built-in spam/deal filter still applies.';
+    return `<span class="cfg-empty">${msg}</span>`;
+  }
+  return terms.map((t, i) =>
+    `<span class="kw-chip">${escapeAttr(t)}<button class="kw-chip-x" title="Remove" onclick="removeListItemAt('${key}',${i})">×</button></span>`
+  ).join('');
+}
+
+// A chip-editable list setting (block_keywords or block_topics).
+function chipSection(key, scope, placeholder) {
+  const spec = appSettingsSchema[key];
+  const terms = appSettings[key] || [];
+  return `<div class="settings-section">
+    <div class="settings-h">${spec.label} <span class="settings-h-count">${terms.length} active</span></div>
+    <div class="settings-help">${spec.help}</div>
+    <div class="feed-form" style="max-width:560px;">
+      <div class="feed-form-row">
+        <input class="feed-input" id="add-${scope}-input" type="text"
+               placeholder="${placeholder}"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();addListItem('${key}','${scope}');}">
+        <button class="feed-btn primary" onclick="addListItem('${key}','${scope}')">Add</button>
+      </div>
+      <div class="cfg-status" id="cfg-status-${scope}"></div>
+    </div>
+    <div class="kw-chips">${blockChips(key, terms)}</div>
+  </div>`;
+}
+
+function renderFiltersPane(pane) {
+  pane.innerHTML =
+    chipSection('block_keywords', 'kw', 'Add a keyword to block (e.g. cryptocurrency)') +
+    chipSection('block_topics', 'topic', 'Add a topic to block (e.g. celebrity gossip)') +
+    renderNumericGroup('blocklist', 'Topic blocking');
+}
+
+window.addListItem = async function(key, scope) {
+  const el = document.getElementById('add-' + scope + '-input');
+  const term = (el && el.value || '').trim();
+  if (!term) { setCfgStatus(scope, 'err', 'Enter something first'); return; }
+  const items = [...(appSettings[key] || []), term];
+  setCfgStatus(scope, 'muted', 'Saving…');
+  try {
+    await saveSettings({ [key]: items });
+    renderSettingsPane();
+    setCfgStatus(scope, 'ok', 'Saved — applies on the next run.');
+  } catch (e) { setCfgStatus(scope, 'err', e.message || String(e)); }
+};
+
+window.removeListItemAt = async function(key, index) {
+  const items = (appSettings[key] || []).filter((_, i) => i !== index);
+  const scope = key === 'block_topics' ? 'topic' : 'kw';
+  setCfgStatus(scope, 'muted', 'Saving…');
+  try {
+    await saveSettings({ [key]: items });
+    renderSettingsPane();
+    setCfgStatus(scope, 'ok', 'Removed — applies on the next run.');
+  } catch (e) { setCfgStatus(scope, 'err', e.message || String(e)); }
+};
+
+function renderApplyFooter() {
+  return `<div class="settings-section">
+    <div class="settings-h">Apply now</div>
+    <div class="settings-help">
+      Saved settings take effect on the next scheduled run. Trigger one immediately:
+    </div>
+    <div class="cfg-actions">
+      <button class="feed-btn primary" id="refresh-now-btn" onclick="triggerRefresh()">Refresh now</button>
+      <span class="cfg-status" id="cfg-status-refresh"></span>
+    </div>
+  </div>`;
+}
+
+window.triggerRefresh = async function() {
+  const btn = document.getElementById('refresh-now-btn');
+  setCfgStatus('refresh', 'muted', 'Triggering…');
+  if (btn) btn.disabled = true;
+  try {
+    const res = await fetch('/refresh', { method: 'POST' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    setCfgStatus('refresh', 'ok', 'Refresh triggered — watch the header for progress.');
+    scheduleStatusPoll(800);   // surface the "Updating…" pill promptly
+  } catch (e) {
+    setCfgStatus('refresh', 'err', e.message || String(e));
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+};
+
+function renderDeploySection() {
+  const d = deployInfo || {};
+  const rows = [
+    ['Ollama host', d.ollama_host],
+    ['Port', d.port],
+  ];
+  return `<div class="settings-section">
+    <div class="settings-h">Deployment <span class="settings-h-count">read-only</span></div>
+    <div class="settings-help">
+      Set in docker-compose at container start. Change it there and restart;
+      which models to use is configured in the Models tab.
+    </div>
+    <table class="stats-table"><tbody>
+      ${rows.map(([k, v]) => `<tr><td class="feed-cell-name">${k}</td><td style="color:var(--text2)">${escapeAttr(String(v == null ? '' : v))}</td></tr>`).join('')}
+    </tbody></table>
+  </div>`;
+}
+
+window.confirmResetLearning = function() {
+  if (confirm('Reset all source affinity counters? This cannot be undone.')) {
+    resetLearning();
+  }
+};
+
+/* ── Background sync ──────────────────────────────────── */
+let backgroundSyncTimer = null;
+const BACKGROUND_SYNC_MS = 30000;
+
+function startBackgroundSync() {
+  // Re-fetch on tab focus / visibility — that's when staleness matters most
+  // (you switched back from another device or another tab).
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refreshFromRemote();
+  });
+  window.addEventListener('focus', () => refreshFromRemote());
+  window.addEventListener('online', () => {
+    // Network came back: flush any queued retry immediately and pull fresh state.
+    if (syncRetryTimer) { clearTimeout(syncRetryTimer); syncRetryTimer = null; }
+    saveSharedState().catch(() => {});
+    refreshFromRemote();
+  });
+
+  // Slow poll while the tab is visible. Cheap (just one GET) and bounds
+  // worst-case staleness for an always-on tab.
+  const tick = () => {
+    if (document.visibilityState === 'visible') refreshFromRemote();
+  };
+  backgroundSyncTimer = setInterval(tick, BACKGROUND_SYNC_MS);
+}
+
+/* ── Pipeline run status + auto-surface fresh digests ──── */
+let loadedGeneratedAt = null;   // generated_at of the digest currently rendered
+let pendingDigest = null;       // a newer digest fetched but not yet shown
+let pendingNewCount = 0;        // genuinely-new visible stories in pendingDigest
+let statusPollTimer = null;
+let lastRunning = false;
+
+// How many stories in `data` are actually new to Home: a fresh id (not in the
+// current digest), dated today, not already read or saved — then de-duplicated
+// the same way the grid is, so the number matches the cards you'll see. This is
+// what the pill reports, NOT the digest's raw article_count (which counts every
+// article, most of which you've already seen or that collapse into existing
+// coverage).
+function countNewStories(data) {
+  const oldIds = new Set(allArticles.map(a => a.id));
+  const inLater = laterIdSet();
+  const fresh = (data.articles || []).filter(a =>
+    !oldIds.has(a.id) && isToday(a) && !sharedState.readIds.has(a.id) && !inLater.has(a.id));
+  return dedupeToReps(fresh).length;
+}
+
+function applyDigestData(data) {
+  // Order: today's stories first (by score), then recent past (by recency).
+  allArticles = (data.articles || []).sort((a, b) => {
+    const at = isToday(a) ? 1 : 0, bt = isToday(b) ? 1 : 0;
+    if (at !== bt) return bt - at;
+    if (at && bt)  return b.score - a.score;
+    const ds = new Date(b.published_at) - new Date(a.published_at);
+    return ds !== 0 ? ds : b.score - a.score;
+  });
+  loadedGeneratedAt = data.generated_at || null;
+  const genDate = data.generated_at ? new Date(data.generated_at) : new Date();
+  document.getElementById('header-date').textContent =
+    '— ' + genDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
+function refreshRunPill(running, phase) {
+  const pill = document.getElementById('run-pill');
+  if (!pill) return;
+  if (running) {
+    pill.className = 'run-pill running';
+    pill.innerHTML = `<span class="run-spinner"></span>Updating${phase ? ' · ' + phase : ''}`;
+    pill.onclick = null;
+    pill.style.display = 'inline-flex';
+  } else if (pendingDigest) {
+    const n = pendingNewCount;
+    pill.className = 'run-pill ready';
+    // Honest about what will change: a count only when there are genuinely new
+    // stories, otherwise just "updated" (re-scored/re-ranked, nothing new).
+    pill.textContent = n > 0
+      ? `↑ ${n} new ${n === 1 ? 'story' : 'stories'} — refresh`
+      : 'Digest updated — refresh';
+    pill.onclick = applyPendingDigest;
+    pill.style.display = 'inline-flex';
+  } else {
+    pill.style.display = 'none';
+    pill.onclick = null;
+  }
+}
+
+window.applyPendingDigest = function() {
+  if (!pendingDigest) return;
+  applyDigestData(pendingDigest);
+  pendingDigest = null;
+  refreshRunPill(false);
+  rerenderActiveView();
+  if (currentView === 'digest') window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+async function checkForNewDigest() {
+  try {
+    const res = await fetch(DIGEST_URL, { cache: 'no-store' });
+    const data = await res.json();
+    if (data && data.generated_at && data.generated_at !== loadedGeneratedAt) {
+      pendingDigest = data;
+      pendingNewCount = countNewStories(data);
+      refreshRunPill(false);
+    }
+  } catch (e) { /* transient; try again next poll */ }
+}
+
+function scheduleStatusPoll(delay) {
+  if (statusPollTimer) clearTimeout(statusPollTimer);
+  statusPollTimer = setTimeout(() => {
+    if (document.visibilityState === 'hidden') { scheduleStatusPoll(delay); return; }
+    pollStatus();
+  }, delay);
+}
+
+async function pollStatus() {
+  let st = null;
+  try { const r = await fetch('/status', { cache: 'no-store' }); st = await r.json(); } catch (e) {}
+  const running = !!(st && st.running);
+  refreshRunPill(running, st && st.phase);
+  // Keep the Runs log live while it's open (updates the in-progress row and
+  // surfaces a run the moment it lands or fails).
+  if (currentView === 'settings' && settingsTab === 'runs') refreshRuns();
+  // A run just finished — see if it produced a fresh digest to surface.
+  if (lastRunning && !running) await checkForNewDigest();
+  lastRunning = running;
+  // Poll fast while a run is active, slow when idle.
+  scheduleStatusPoll(running ? 3000 : 25000);
+}
+
+/* ── Load digest.json + state in parallel ────────────── */
+async function loadDigest() {
+  const statusEl = document.getElementById('status-screen');
+  const pageEl   = document.querySelector('.page');
+  const markDone = (id) => document.getElementById(id)?.classList.add('done');
+
+  const digestPromise = (async () => {
+    const res = await fetch(DIGEST_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    markDone('sync-digest');
+    return data;
+  })();
+
+  const statePromise = (async () => {
+    const remote = await loadRemoteState();
+    markDone('sync-state');
+    return remote;
+  })();
+
+  const catsPromise = (async () => {
+    try { const r = await fetch('/categories', { cache: 'no-store' }); return await r.json(); }
+    catch (e) { return null; }
+  })();
+
+  try {
+    const [data, remoteState, cats] = await Promise.all([digestPromise, statePromise, catsPromise]);
+
+    buildCats(cats);   // before any render so nav/colors reflect the config
+    applyDigestData(data);
+
+    // Server is the source of truth. If we got it, replace whatever
+    // localStorage had (stale local state was the iPad-resurrection bug).
+    // If the server is unreachable, fall back to local cache so the app
+    // still renders something offline.
+    applySharedState(remoteState || loadLocalState());
+    // Apply any pending time-decay on the source-affinity counters once the
+    // canonical state has landed; persists asynchronously if it ran.
+    if (maybeDecayLearning()) saveSharedState().catch(() => {});
+    saveLocalState(sharedState);
+
+    setActiveView(currentView);
+    buildCatNav();
+    updateCatCounts();
+    updateBadges();
+    if (currentView === 'history')       renderHistory();
+    else if (currentView === 'later')    renderLater();
+    else if (currentView === 'settings') renderSettings();
+    else render();
+
+    statusEl.style.display = 'none';
+    pageEl.classList.remove('not-ready');
+
+    startBackgroundSync();
+    scheduleStatusPoll(2000);   // begin watching pipeline runs
+  } catch(err) {
+    statusEl.innerHTML = `<div style="text-align:center;">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:8px;">Could not load digest</div>
+      <div style="font-size:12px;color:var(--text3);">${err.message}</div>
+    </div>`;
+  }
+}
+
+loadDigest();
+</script>
+</body>
+</html>

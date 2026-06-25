@@ -1,0 +1,52 @@
+[
+  {
+    "url": "https://feeds.arstechnica.com/arstechnica/index",
+    "source": "Ars Technica",
+    "category": "tech"
+  },
+  {
+    "url": "https://www.theverge.com/rss/index.xml",
+    "source": "The Verge",
+    "category": "tech"
+  },
+  {
+    "url": "https://hnrss.org/frontpage",
+    "source": "Hacker News",
+    "category": "tech"
+  },
+  {
+    "url": "https://www.technologyreview.com/feed/",
+    "source": "MIT Technology Review",
+    "category": "ai"
+  },
+  {
+    "url": "https://venturebeat.com/category/ai/feed/",
+    "source": "VentureBeat",
+    "category": "ai"
+  },
+  {
+    "url": "https://www.sciencedaily.com/rss/all.xml",
+    "source": "ScienceDaily",
+    "category": "science"
+  },
+  {
+    "url": "https://phys.org/rss-feed/",
+    "source": "Phys.org",
+    "category": "science"
+  },
+  {
+    "url": "https://techcrunch.com/feed/",
+    "source": "TechCrunch",
+    "category": "business"
+  },
+  {
+    "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+    "source": "BBC News",
+    "category": "world"
+  },
+  {
+    "url": "https://www.polygon.com/rss/index.xml",
+    "source": "Polygon",
+    "category": "gaming"
+  }
+]
