@@ -272,7 +272,6 @@
     /* ── Score dot ──────────────────────────────────────── */
     .score-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; vertical-align: middle; cursor: help; }
     .src .score-dot { margin-right: 5px; position: relative; top: -1px; }
-    .rail-meta .score-dot { width: 6px; height: 6px; margin-right: 4px; }
 
     /* ── Buttons ────────────────────────────────────────── */
     .btn-dismiss {
@@ -1801,7 +1800,7 @@ function renderRail(articles, hidden = 0) {
     ${arts.map(a => `
       <article class="article-wrap rail-item" id="wrap-${a.id}" style="max-height:9999px;">
         <a class="rail-title" href="${a.url}" onclick="openArticle('${a.id}','${a.url}'); return false;">${a.title}</a>
-        <div class="rail-meta">${scoreIndicator(a)}<span class="cdot" style="background:${catMeta(a.category).c}"></span><span>${a.source}</span></div>
+        <div class="rail-meta"><span class="cdot" style="background:${catMeta(a.category).c}"></span><span>${a.source}</span></div>
         ${clusterDisclosure(a)}
         <div class="rail-actions">
           <button class="act later" onclick="saveForLater('${a.id}')">Later</button>
