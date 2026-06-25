@@ -271,20 +271,28 @@
 
     /* ── Score dot ──────────────────────────────────────── */
     .score-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .score-wrap { position: relative; display: inline-flex; align-items: center; vertical-align: middle; }
-    .src .score-wrap { margin-right: 5px; position: relative; top: -1px; }
+    .thumb-frame { position: relative; }
+    .score-chip {
+      position: absolute; top: 9px; right: 9px; z-index: 6;
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(15,14,12,.82); color: #fff;
+      font-family: var(--font-head); font-weight: 700; font-size: 12.5px;
+      padding: 3px 9px 3px 7px; border-radius: 999px;
+      backdrop-filter: blur(3px); box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    }
+    .score-chip-val { font-variant-numeric: tabular-nums; letter-spacing: .01em; }
     .score-pop {
-      position: absolute; bottom: calc(100% + 9px); left: -3px; z-index: 60;
+      position: absolute; top: calc(100% + 8px); right: 0; z-index: 60;
       min-width: 156px; padding: 9px 11px 10px;
       background: var(--surface); border: 1px solid var(--border2);
-      border-radius: var(--radius); box-shadow: var(--shadow-hover);
-      opacity: 0; visibility: hidden; transform: translateY(4px);
+      border-radius: var(--radius); box-shadow: var(--shadow-hover); text-align: left;
+      opacity: 0; visibility: hidden; transform: translateY(-4px);
       transition: opacity .14s ease, transform .14s ease; pointer-events: none;
     }
-    .score-wrap:hover .score-pop { opacity: 1; visibility: visible; transform: translateY(0); }
+    .score-chip:hover .score-pop { opacity: 1; visibility: visible; transform: translateY(0); }
     .score-pop::after {
-      content: ''; position: absolute; top: 100%; left: 9px;
-      border: 5px solid transparent; border-top-color: var(--surface);
+      content: ''; position: absolute; bottom: 100%; right: 12px;
+      border: 5px solid transparent; border-bottom-color: var(--surface);
     }
     .score-pop-title { display: block; font-size: 9px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
     .score-row { display: flex; justify-content: space-between; gap: 18px; font-size: 12px; line-height: 1.65; color: var(--text2); font-variant-numeric: tabular-nums; }
@@ -1086,14 +1094,14 @@ function scoreColor(score) {
   return '#555250';
 }
 
-// Rank-tier dot + hover breakdown of how a story is ranked. The dot tiers on
-// the personalized effectiveScore — the value the feed actually sorts by — so
-// its colour matches the page order and the "Score" line in the popover (green
-// >=8, amber >=5.5, grey below). The popover shows how the raw Base relevance
-// becomes that Score: same-topic coverage (cluster_boost), personalization
-// (taste_boost), and the per-source affinity multiplier. Empty for items
-// without a score (e.g. saved Read Later entries).
-function scoreIndicator(a) {
+// Rank score shown as a chip overlaid on the thumbnail, with a hover breakdown.
+// The chip number is the personalized effectiveScore — the value the feed sorts
+// by — and the tier dot inside tints by the same value (green >=8, amber >=5.5,
+// grey below). The popover shows how the raw Base relevance becomes that Score:
+// same-topic coverage (cluster_boost), personalization (taste_boost), and the
+// per-source affinity multiplier. Empty for items without a score (e.g. saved
+// Read Later entries).
+function scoreChip(a) {
   if (!a || typeof a.score !== 'number') return '';
   const r = (n) => (Math.round(n * 10) / 10).toFixed(1);
   const base = a.score || 0;
@@ -1105,12 +1113,18 @@ function scoreIndicator(a) {
   if (a.taste_boost)   rows.push(row('For you', `+${r(a.taste_boost)}`));
   rows.push(row('Source', `×${r(affinityFor(a.source))}`));
   rows.push(row('Score', r(eff), 'score-row-total'));
-  return `<span class="score-wrap">`
+  return `<span class="score-chip">`
     + `<span class="score-dot" style="background:${scoreColor(eff)};"></span>`
-    + `<span class="score-pop" role="tooltip">`
-    +   `<span class="score-pop-title">Ranking</span>${rows.join('')}`
-    + `</span>`
+    + `<span class="score-chip-val">${r(eff)}</span>`
+    + `<span class="score-pop" role="tooltip"><span class="score-pop-title">Ranking</span>${rows.join('')}</span>`
     + `</span>`;
+}
+
+// Thumbnail wrapped in a non-clipping frame so the score chip (and its hover
+// popover) can overlay the image — .thumb itself is overflow:hidden for the
+// hover zoom, which would otherwise clip them.
+function thumbBlock(a) {
+  return `<div class="thumb-frame">${openLink(a, thumb(a))}${scoreChip(a)}</div>`;
 }
 
 function catMeta(c) { return CATS[c] || { label: c, c: '#8a90a0' }; }
@@ -1747,7 +1761,7 @@ function relTime(a) {
 }
 function srcLine(a) {
   const t = relTime(a);
-  return `<span class="src">${scoreIndicator(a)}${a.source}${t ? ` · <time>${t}</time>` : ''}</span>`;
+  return `<span class="src">${a.source}${t ? ` · <time>${t}</time>` : ''}</span>`;
 }
 function cardActions(a) {
   return `<div class="card-actions">
@@ -1763,7 +1777,7 @@ function renderHero(lead, side) {
   if (!lead) { el.innerHTML = '<p class="empty">No stories for this filter.</p>'; return; }
   const leadHTML = `
     <article class="article-wrap lead" id="wrap-${lead.id}" style="max-height:9999px;">
-      ${openLink(lead, thumb(lead))}
+      ${thumbBlock(lead)}
       ${kicker(lead)}
       <h2 class="lead-title">${openLink(lead, lead.title)}</h2>
       ${lead.summary ? `<p class="lead-summary">${lead.summary}</p>` : ''}
@@ -1772,7 +1786,7 @@ function renderHero(lead, side) {
     </article>`;
   const sideHTML = side.map(a => `
     <article class="article-wrap mini" id="wrap-${a.id}" style="max-height:9999px;">
-      ${openLink(a, thumb(a))}
+      ${thumbBlock(a)}
       <div>
         ${kicker(a)}
         <h3 class="mini-title">${openLink(a, a.title)}</h3>
@@ -1786,7 +1800,7 @@ function renderHero(lead, side) {
 function gridCardHTML(a) {
   return `
     <article class="article-wrap card" id="wrap-${a.id}" style="max-height:9999px;">
-      ${openLink(a, thumb(a))}
+      ${thumbBlock(a)}
       ${kicker(a)}
       <h3 class="card-title">${openLink(a, a.title)}</h3>
       ${a.summary ? `<p class="card-summary">${a.summary}</p>` : ''}
