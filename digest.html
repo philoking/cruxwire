@@ -270,8 +270,27 @@
     .sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
     /* ── Score dot ──────────────────────────────────────── */
-    .score-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; vertical-align: middle; cursor: help; }
-    .src .score-dot { margin-right: 5px; position: relative; top: -1px; }
+    .score-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .score-wrap { position: relative; display: inline-flex; align-items: center; vertical-align: middle; }
+    .src .score-wrap { margin-right: 5px; position: relative; top: -1px; }
+    .score-pop {
+      position: absolute; bottom: calc(100% + 9px); left: -3px; z-index: 60;
+      min-width: 156px; padding: 9px 11px 10px;
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: var(--radius); box-shadow: var(--shadow-hover);
+      opacity: 0; visibility: hidden; transform: translateY(4px);
+      transition: opacity .14s ease, transform .14s ease; pointer-events: none;
+    }
+    .score-wrap:hover .score-pop { opacity: 1; visibility: visible; transform: translateY(0); }
+    .score-pop::after {
+      content: ''; position: absolute; top: 100%; left: 9px;
+      border: 5px solid transparent; border-top-color: var(--surface);
+    }
+    .score-pop-title { display: block; font-size: 9px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
+    .score-row { display: flex; justify-content: space-between; gap: 18px; font-size: 12px; line-height: 1.65; color: var(--text2); font-variant-numeric: tabular-nums; }
+    .score-row-v { color: var(--text); font-weight: 600; }
+    .score-row-total { margin-top: 5px; padding-top: 5px; border-top: 1px solid var(--border); }
+    .score-row-total .score-row-k { color: var(--text); font-weight: 600; }
 
     /* ── Buttons ────────────────────────────────────────── */
     .btn-dismiss {
@@ -1068,7 +1087,7 @@ function scoreColor(score) {
 }
 
 // Quality-tier dot + hover breakdown of how a story is ranked. The dot tiers on
-// the raw story score (the LLM's relevance call); the title tooltip shows how
+// the raw story score (the LLM's relevance call); the hover popover shows how
 // that base becomes the effectiveScore the feed actually sorts by — same-topic
 // coverage (cluster_boost), personalization (taste_boost), and per-source
 // affinity. Empty for items without a score (e.g. saved Read Later entries).
@@ -1076,12 +1095,19 @@ function scoreIndicator(a) {
   if (!a || typeof a.score !== 'number') return '';
   const r = (n) => (Math.round(n * 10) / 10).toFixed(1);
   const base = a.score || 0;
-  const parts = [`base ${r(base)}`];
-  if (a.cluster_boost) parts.push(`+cluster ${r(a.cluster_boost)}`);
-  if (a.taste_boost)   parts.push(`+taste ${r(a.taste_boost)}`);
-  parts.push(`×affinity ${r(affinityFor(a.source))}`);
-  parts.push(`= ${r(effectiveScore(a))}`);
-  return `<span class="score-dot" style="background:${scoreColor(base)};" title="${parts.join('  ')}"></span>`;
+  const row = (k, v, cls = '') =>
+    `<span class="score-row${cls ? ' ' + cls : ''}"><span class="score-row-k">${k}</span><span class="score-row-v">${v}</span></span>`;
+  const rows = [row('Base', r(base))];
+  if (a.cluster_boost) rows.push(row('Coverage', `+${r(a.cluster_boost)}`));
+  if (a.taste_boost)   rows.push(row('For you', `+${r(a.taste_boost)}`));
+  rows.push(row('Source', `×${r(affinityFor(a.source))}`));
+  rows.push(row('Score', r(effectiveScore(a)), 'score-row-total'));
+  return `<span class="score-wrap">`
+    + `<span class="score-dot" style="background:${scoreColor(base)};"></span>`
+    + `<span class="score-pop" role="tooltip">`
+    +   `<span class="score-pop-title">Ranking</span>${rows.join('')}`
+    + `</span>`
+    + `</span>`;
 }
 
 function catMeta(c) { return CATS[c] || { label: c, c: '#8a90a0' }; }
