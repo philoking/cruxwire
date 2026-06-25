@@ -270,7 +270,9 @@
     .sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
     /* ── Score dot ──────────────────────────────────────── */
-    .score-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .score-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; vertical-align: middle; cursor: help; }
+    .src .score-dot { margin-right: 5px; position: relative; top: -1px; }
+    .rail-meta .score-dot { width: 6px; height: 6px; margin-right: 4px; }
 
     /* ── Buttons ────────────────────────────────────────── */
     .btn-dismiss {
@@ -1066,8 +1068,21 @@ function scoreColor(score) {
   return '#555250';
 }
 
-function scoreDot(score) {
-  return `<span class="score-dot" style="background:${scoreColor(score)};"></span>`;
+// Quality-tier dot + hover breakdown of how a story is ranked. The dot tiers on
+// the raw story score (the LLM's relevance call); the title tooltip shows how
+// that base becomes the effectiveScore the feed actually sorts by — same-topic
+// coverage (cluster_boost), personalization (taste_boost), and per-source
+// affinity. Empty for items without a score (e.g. saved Read Later entries).
+function scoreIndicator(a) {
+  if (!a || typeof a.score !== 'number') return '';
+  const r = (n) => (Math.round(n * 10) / 10).toFixed(1);
+  const base = a.score || 0;
+  const parts = [`base ${r(base)}`];
+  if (a.cluster_boost) parts.push(`+cluster ${r(a.cluster_boost)}`);
+  if (a.taste_boost)   parts.push(`+taste ${r(a.taste_boost)}`);
+  parts.push(`×affinity ${r(affinityFor(a.source))}`);
+  parts.push(`= ${r(effectiveScore(a))}`);
+  return `<span class="score-dot" style="background:${scoreColor(base)};" title="${parts.join('  ')}"></span>`;
 }
 
 function catMeta(c) { return CATS[c] || { label: c, c: '#8a90a0' }; }
@@ -1704,7 +1719,7 @@ function relTime(a) {
 }
 function srcLine(a) {
   const t = relTime(a);
-  return `<span class="src">${a.source}${t ? ` · <time>${t}</time>` : ''}</span>`;
+  return `<span class="src">${scoreIndicator(a)}${a.source}${t ? ` · <time>${t}</time>` : ''}</span>`;
 }
 function cardActions(a) {
   return `<div class="card-actions">
@@ -1786,7 +1801,7 @@ function renderRail(articles, hidden = 0) {
     ${arts.map(a => `
       <article class="article-wrap rail-item" id="wrap-${a.id}" style="max-height:9999px;">
         <a class="rail-title" href="${a.url}" onclick="openArticle('${a.id}','${a.url}'); return false;">${a.title}</a>
-        <div class="rail-meta"><span class="cdot" style="background:${catMeta(a.category).c}"></span><span>${a.source}</span></div>
+        <div class="rail-meta">${scoreIndicator(a)}<span class="cdot" style="background:${catMeta(a.category).c}"></span><span>${a.source}</span></div>
         ${clusterDisclosure(a)}
         <div class="rail-actions">
           <button class="act later" onclick="saveForLater('${a.id}')">Later</button>
