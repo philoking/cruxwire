@@ -270,7 +270,6 @@
     .sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
     /* ── Score dot ──────────────────────────────────────── */
-    .score-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
     .thumb-frame { position: relative; }
     .score-chip {
       position: absolute; top: 9px; right: 9px; z-index: 6;
@@ -1088,19 +1087,12 @@ function saveRead() {
   saveSharedState().catch(() => {});
 }
 
-function scoreColor(score) {
-  if (score >= 8)   return '#639922';
-  if (score >= 5.5) return '#BA7517';
-  return '#555250';
-}
-
 // Rank score shown as a chip overlaid on the thumbnail, with a hover breakdown.
 // The chip number is the personalized effectiveScore — the value the feed sorts
-// by — and the tier dot inside tints by the same value (green >=8, amber >=5.5,
-// grey below). The popover shows how the raw Base relevance becomes that Score:
-// same-topic coverage (cluster_boost), personalization (taste_boost), and the
-// per-source affinity multiplier. Empty for items without a score (e.g. saved
-// Read Later entries).
+// by. The popover shows how the raw Base relevance becomes that Score: same-topic
+// coverage (cluster_boost), personalization (taste_boost), and the per-source
+// affinity multiplier. Empty for items without a score (e.g. saved Read Later
+// entries).
 function scoreChip(a) {
   if (!a || typeof a.score !== 'number') return '';
   const r = (n) => (Math.round(n * 10) / 10).toFixed(1);
@@ -1114,7 +1106,6 @@ function scoreChip(a) {
   rows.push(row('Source', `×${r(affinityFor(a.source))}`));
   rows.push(row('Score', r(eff), 'score-row-total'));
   return `<span class="score-chip">`
-    + `<span class="score-dot" style="background:${scoreColor(eff)};"></span>`
     + `<span class="score-chip-val">${r(eff)}</span>`
     + `<span class="score-pop" role="tooltip"><span class="score-pop-title">Ranking</span>${rows.join('')}</span>`
     + `</span>`;
