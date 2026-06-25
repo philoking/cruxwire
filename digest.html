@@ -891,9 +891,18 @@ function statesDiffer(a, b) {
 }
 
 function applySharedState(state) {
+  // readIds is append-only — you never un-read a story. Union the incoming set
+  // with whatever is already in memory so a stale GET, or the server's echo of
+  // an older in-flight PUT snapshot, can never *remove* an id we just added.
+  // That removal is what let a freshly-dismissed cluster reappear on the next
+  // background poll or focus-refresh (the markClusterRead additions were getting
+  // clobbered). later/history have genuine removals, so they take the incoming
+  // value as before.
+  const readIds = new Set(sharedState.readIds);
+  for (const id of state.readIds) readIds.add(id);
   sharedState = {
     ...state,
-    readIds: new Set(state.readIds),
+    readIds,
     viewState: { ...state.viewState },
   };
 
