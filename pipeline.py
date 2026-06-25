@@ -22,6 +22,7 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 
+import corpus_archive
 import settings
 
 # ──────────────────────────────────────────────────────────────────────
@@ -958,6 +959,10 @@ def run_once():
             'model': embed_model,
             'vectors': {i: v for i, v in emb_index.items() if i in kept_ids},
         })
+        # Best-effort copy to the corpus archive for the offline Clustering
+        # Bench (off unless BENCH_CAPTURE_ENABLED). Never raises; the digest
+        # and the feed are unaffected if it fails. See corpus_archive.py.
+        corpus_archive.archive_articles(scored, emb_index, embed_model, cfg, log=log)
         log(f'wrote {article_count} articles in {clusters} clusters -> {DIGEST_FILE}')
         _set_status(article_count=article_count)
         ok = True
