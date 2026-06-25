@@ -1086,24 +1086,27 @@ function scoreColor(score) {
   return '#555250';
 }
 
-// Quality-tier dot + hover breakdown of how a story is ranked. The dot tiers on
-// the raw story score (the LLM's relevance call); the hover popover shows how
-// that base becomes the effectiveScore the feed actually sorts by — same-topic
-// coverage (cluster_boost), personalization (taste_boost), and per-source
-// affinity. Empty for items without a score (e.g. saved Read Later entries).
+// Rank-tier dot + hover breakdown of how a story is ranked. The dot tiers on
+// the personalized effectiveScore — the value the feed actually sorts by — so
+// its colour matches the page order and the "Score" line in the popover (green
+// >=8, amber >=5.5, grey below). The popover shows how the raw Base relevance
+// becomes that Score: same-topic coverage (cluster_boost), personalization
+// (taste_boost), and the per-source affinity multiplier. Empty for items
+// without a score (e.g. saved Read Later entries).
 function scoreIndicator(a) {
   if (!a || typeof a.score !== 'number') return '';
   const r = (n) => (Math.round(n * 10) / 10).toFixed(1);
   const base = a.score || 0;
+  const eff = effectiveScore(a);
   const row = (k, v, cls = '') =>
     `<span class="score-row${cls ? ' ' + cls : ''}"><span class="score-row-k">${k}</span><span class="score-row-v">${v}</span></span>`;
   const rows = [row('Base', r(base))];
   if (a.cluster_boost) rows.push(row('Coverage', `+${r(a.cluster_boost)}`));
   if (a.taste_boost)   rows.push(row('For you', `+${r(a.taste_boost)}`));
   rows.push(row('Source', `×${r(affinityFor(a.source))}`));
-  rows.push(row('Score', r(effectiveScore(a)), 'score-row-total'));
+  rows.push(row('Score', r(eff), 'score-row-total'));
   return `<span class="score-wrap">`
-    + `<span class="score-dot" style="background:${scoreColor(base)};"></span>`
+    + `<span class="score-dot" style="background:${scoreColor(eff)};"></span>`
     + `<span class="score-pop" role="tooltip">`
     +   `<span class="score-pop-title">Ranking</span>${rows.join('')}`
     + `</span>`
