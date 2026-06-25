@@ -270,21 +270,28 @@
     .sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
     /* ── Score dot ──────────────────────────────────────── */
-    .score-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .score-wrap { position: relative; display: inline-flex; align-items: center; vertical-align: middle; }
-    .src .score-wrap { margin-right: 5px; position: relative; top: -1px; }
+    .thumb-frame { position: relative; }
+    .score-chip {
+      position: absolute; top: 9px; right: 9px; z-index: 6;
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(15,14,12,.82); color: #fff;
+      font-family: var(--font-head); font-weight: 700; font-size: 12.5px;
+      padding: 3px 9px 3px 7px; border-radius: 999px;
+      backdrop-filter: blur(3px); box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    }
+    .score-chip-val { font-variant-numeric: tabular-nums; letter-spacing: .01em; }
     .score-pop {
-      position: absolute; bottom: calc(100% + 9px); left: -3px; z-index: 60;
+      position: absolute; top: calc(100% + 8px); right: 0; z-index: 60;
       min-width: 156px; padding: 9px 11px 10px;
       background: var(--surface); border: 1px solid var(--border2);
-      border-radius: var(--radius); box-shadow: var(--shadow-hover);
-      opacity: 0; visibility: hidden; transform: translateY(4px);
+      border-radius: var(--radius); box-shadow: var(--shadow-hover); text-align: left;
+      opacity: 0; visibility: hidden; transform: translateY(-4px);
       transition: opacity .14s ease, transform .14s ease; pointer-events: none;
     }
-    .score-wrap:hover .score-pop { opacity: 1; visibility: visible; transform: translateY(0); }
+    .score-chip:hover .score-pop { opacity: 1; visibility: visible; transform: translateY(0); }
     .score-pop::after {
-      content: ''; position: absolute; top: 100%; left: 9px;
-      border: 5px solid transparent; border-top-color: var(--surface);
+      content: ''; position: absolute; bottom: 100%; right: 12px;
+      border: 5px solid transparent; border-bottom-color: var(--surface);
     }
     .score-pop-title { display: block; font-size: 9px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
     .score-row { display: flex; justify-content: space-between; gap: 18px; font-size: 12px; line-height: 1.65; color: var(--text2); font-variant-numeric: tabular-nums; }
@@ -428,6 +435,15 @@
     .settings-section { margin-bottom: 32px; }
     .settings-h { font-size: 13px; font-weight: 600; color: var(--text); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
     .settings-help { font-size: 13px; color: var(--text2); margin-bottom: 14px; line-height: 1.5; }
+    .toggle-row { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; user-select: none; }
+    .toggle-row input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .toggle-track { flex-shrink: 0; width: 38px; height: 22px; border-radius: 999px; background: var(--border2); position: relative; transition: background .15s; margin-top: 1px; }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.3); transition: transform .15s; }
+    .toggle-row input:checked + .toggle-track { background: var(--brand); }
+    .toggle-row input:checked + .toggle-track .toggle-thumb { transform: translateX(16px); }
+    .toggle-row input:focus-visible + .toggle-track { outline: 2px solid var(--brand); outline-offset: 2px; }
+    .toggle-label { font-size: 14px; color: var(--text); font-weight: 500; display: flex; flex-direction: column; gap: 3px; }
+    .toggle-sub { font-size: 12.5px; color: var(--text2); font-weight: 400; line-height: 1.45; max-width: 60ch; }
 
     .feed-form { display: grid; gap: 10px; max-width: 560px; margin-bottom: 18px; }
     .feed-form-row { display: flex; gap: 8px; align-items: center; }
@@ -753,7 +769,7 @@ const LEAD_MAX          = 4;     // cap the lead tier so it stays editorial
 const MID_THRESH        = 5.5;   // (legacy; kept for any external reference)
 const HISTORY_DAYS      = 3; // keep today + 2 prior calendar days
 
-const DEFAULT_VIEW_STATE = { currentView: 'digest', currentCat: 'all', digestCat: 'all' };
+const DEFAULT_VIEW_STATE = { currentView: 'digest', currentCat: 'all', digestCat: 'all', showScores: false };
 
 /* ── Category metadata (c = accent color) ─────────────── */
 // Built from GET /categories at load (see buildCats); this is the fallback if
@@ -820,6 +836,7 @@ function normalizeState(raw = {}) {
       currentView: viewState.currentView || 'digest',
       currentCat: viewState.currentCat || 'all',
       digestCat: viewState.digestCat || 'all',
+      showScores: !!viewState.showScores,
     },
     sourceStats: normalizeSourceStats(raw.sourceStats),
     learning: { lastDecayAt: typeof learning.lastDecayAt === 'string' ? learning.lastDecayAt : null },
@@ -1063,7 +1080,7 @@ function switchView(view) {
   else currentCat = digestCat;
 
   currentView = view;
-  sharedState.viewState = { currentView, currentCat, digestCat };
+  sharedState.viewState = { ...sharedState.viewState, currentView, currentCat, digestCat };
   saveSharedState().catch(() => {});
 
   setActiveView(view);
@@ -1080,34 +1097,36 @@ function saveRead() {
   saveSharedState().catch(() => {});
 }
 
-function scoreColor(score) {
-  if (score >= 8)   return '#639922';
-  if (score >= 5.5) return '#BA7517';
-  return '#555250';
-}
-
-// Quality-tier dot + hover breakdown of how a story is ranked. The dot tiers on
-// the raw story score (the LLM's relevance call); the hover popover shows how
-// that base becomes the effectiveScore the feed actually sorts by — same-topic
-// coverage (cluster_boost), personalization (taste_boost), and per-source
-// affinity. Empty for items without a score (e.g. saved Read Later entries).
-function scoreIndicator(a) {
+// Rank score shown as a chip overlaid on the thumbnail, with a hover breakdown.
+// Opt-in via Settings → Display (off by default). The chip number is the
+// personalized effectiveScore — the value the feed sorts by. The popover shows
+// how the raw Base relevance becomes that Score: same-topic coverage
+// (cluster_boost), personalization (taste_boost), and the per-source affinity
+// multiplier. Empty for items without a score (e.g. saved Read Later entries).
+function scoreChip(a) {
+  if (!sharedState.viewState.showScores) return '';
   if (!a || typeof a.score !== 'number') return '';
   const r = (n) => (Math.round(n * 10) / 10).toFixed(1);
   const base = a.score || 0;
+  const eff = effectiveScore(a);
   const row = (k, v, cls = '') =>
     `<span class="score-row${cls ? ' ' + cls : ''}"><span class="score-row-k">${k}</span><span class="score-row-v">${v}</span></span>`;
   const rows = [row('Base', r(base))];
   if (a.cluster_boost) rows.push(row('Coverage', `+${r(a.cluster_boost)}`));
   if (a.taste_boost)   rows.push(row('For you', `+${r(a.taste_boost)}`));
   rows.push(row('Source', `×${r(affinityFor(a.source))}`));
-  rows.push(row('Score', r(effectiveScore(a)), 'score-row-total'));
-  return `<span class="score-wrap">`
-    + `<span class="score-dot" style="background:${scoreColor(base)};"></span>`
-    + `<span class="score-pop" role="tooltip">`
-    +   `<span class="score-pop-title">Ranking</span>${rows.join('')}`
-    + `</span>`
+  rows.push(row('Score', r(eff), 'score-row-total'));
+  return `<span class="score-chip">`
+    + `<span class="score-chip-val">${r(eff)}</span>`
+    + `<span class="score-pop" role="tooltip"><span class="score-pop-title">Ranking</span>${rows.join('')}</span>`
     + `</span>`;
+}
+
+// Thumbnail wrapped in a non-clipping frame so the score chip (and its hover
+// popover) can overlay the image — .thumb itself is overflow:hidden for the
+// hover zoom, which would otherwise clip them.
+function thumbBlock(a) {
+  return `<div class="thumb-frame">${openLink(a, thumb(a))}${scoreChip(a)}</div>`;
 }
 
 function catMeta(c) { return CATS[c] || { label: c, c: '#8a90a0' }; }
@@ -1529,7 +1548,7 @@ function updateCatCounts() {
 
 window.setCategory = function(cat) {
   currentCat = cat;
-  sharedState.viewState = { currentView, currentCat, digestCat };
+  sharedState.viewState = { ...sharedState.viewState, currentView, currentCat, digestCat };
   saveSharedState().catch(() => {});
   buildCatNav();
   if (currentView === 'digest')  render();
@@ -1744,7 +1763,7 @@ function relTime(a) {
 }
 function srcLine(a) {
   const t = relTime(a);
-  return `<span class="src">${scoreIndicator(a)}${a.source}${t ? ` · <time>${t}</time>` : ''}</span>`;
+  return `<span class="src">${a.source}${t ? ` · <time>${t}</time>` : ''}</span>`;
 }
 function cardActions(a) {
   return `<div class="card-actions">
@@ -1760,7 +1779,7 @@ function renderHero(lead, side) {
   if (!lead) { el.innerHTML = '<p class="empty">No stories for this filter.</p>'; return; }
   const leadHTML = `
     <article class="article-wrap lead" id="wrap-${lead.id}" style="max-height:9999px;">
-      ${openLink(lead, thumb(lead))}
+      ${thumbBlock(lead)}
       ${kicker(lead)}
       <h2 class="lead-title">${openLink(lead, lead.title)}</h2>
       ${lead.summary ? `<p class="lead-summary">${lead.summary}</p>` : ''}
@@ -1769,7 +1788,7 @@ function renderHero(lead, side) {
     </article>`;
   const sideHTML = side.map(a => `
     <article class="article-wrap mini" id="wrap-${a.id}" style="max-height:9999px;">
-      ${openLink(a, thumb(a))}
+      ${thumbBlock(a)}
       <div>
         ${kicker(a)}
         <h3 class="mini-title">${openLink(a, a.title)}</h3>
@@ -1783,7 +1802,7 @@ function renderHero(lead, side) {
 function gridCardHTML(a) {
   return `
     <article class="article-wrap card" id="wrap-${a.id}" style="max-height:9999px;">
-      ${openLink(a, thumb(a))}
+      ${thumbBlock(a)}
       ${kicker(a)}
       <h3 class="card-title">${openLink(a, a.title)}</h3>
       ${a.summary ? `<p class="card-summary">${a.summary}</p>` : ''}
@@ -2590,6 +2609,7 @@ const SETTINGS_TABS = [
   { id: 'filters',    label: 'Filters' },
   { id: 'models',     label: 'Models' },
   { id: 'tuning',     label: 'Tuning' },
+  { id: 'display',    label: 'Display' },
   { id: 'runs',       label: 'Runs' },
   { id: 'about',      label: 'About' },
 ];
@@ -2619,6 +2639,7 @@ function renderSettingsPane() {
   if (!pane) return;
   if (settingsTab === 'feeds') { renderFeedsPane(pane); return; }
   if (settingsTab === 'categories') { renderCategoriesPane(pane); return; }
+  if (settingsTab === 'display') { renderDisplayPane(pane); return; }
   if (settingsTab === 'runs')  { renderRunsPane(pane); return; }
 
   // Every other tab needs /settings (and Models also needs /models).
@@ -2647,6 +2668,28 @@ function renderSettingsPane() {
     pane.innerHTML = renderAboutPane();
   }
 }
+
+// Client-side display preferences (per account, synced via viewState).
+function renderDisplayPane(pane) {
+  const on = !!sharedState.viewState.showScores;
+  pane.innerHTML = `
+    <div class="settings-section">
+      <div class="settings-h">Display</div>
+      <div class="settings-help">Personal viewing preferences. These only change what you see — they don't affect how stories are ranked.</div>
+      <label class="toggle-row">
+        <input type="checkbox" onchange="toggleShowScores(this.checked)"${on ? ' checked' : ''}>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-label">Show ranking scores
+          <span class="toggle-sub">Adds a score chip to each story's thumbnail, with a hover breakdown (Base → coverage → personalization → source affinity → final Score). Off by default.</span>
+        </span>
+      </label>
+    </div>`;
+}
+
+window.toggleShowScores = function(on) {
+  sharedState.viewState.showScores = !!on;
+  saveSharedState().catch(() => {});
+};
 
 function renderFeedsPane(pane) {
   const catOptions = Object.keys(CATS)
