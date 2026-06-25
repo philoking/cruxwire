@@ -52,7 +52,7 @@ Editable live in the **Settings** view. Each takes effect on the next pipeline r
 
 | Knob | Default | Notes |
 |------|---------|-------|
-| **Chat model** (`ollama_model`) | `qwen2.5:latest` | Scores, summarises, categorises each article. Must be pulled on your Ollama host. |
+| **Chat model** (`ollama_model`) | `qwen3:8b` | Scores, summarises, categorises each article. Must be pulled on your Ollama host. |
 | **Embedding model** (`embed_model`) | `nomic-embed-text` | Embeds titles+summaries for clustering, taste, and semantic blocking. **Changing this changes the vector space** - `sim_threshold` and `block_topic_threshold` are calibrated to the model; re-tune them if you switch. |
 
 ### Clustering & ranking

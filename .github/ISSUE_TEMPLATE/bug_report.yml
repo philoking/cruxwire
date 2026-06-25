@@ -27,7 +27,7 @@ body:
     attributes:
       label: Ollama setup
       description: Models in use and where Ollama runs.
-      placeholder: e.g. qwen2.5:latest + nomic-embed-text, Ollama native on the same Mac (host.docker.internal)
+      placeholder: e.g. qwen3:8b + nomic-embed-text, Ollama native on the same Mac (host.docker.internal)
     validations:
       required: false
   - type: textarea

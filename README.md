@@ -110,7 +110,7 @@ a refresh with `curl -X POST http://<host>:8090/refresh`.
 - Docker + Docker Compose
 - An [Ollama](https://ollama.com) server reachable over HTTP, with the models pulled:
   ```bash
-  ollama pull qwen2.5:latest      # chat: score / summarise / categorise
+  ollama pull qwen3:8b      # chat: score / summarise / categorise
   ollama pull nomic-embed-text    # embeddings: clustering / taste / semantic block
   ```
 
@@ -168,7 +168,7 @@ A few common knobs:
 | Var / setting | Default | Purpose |
 |-----|---------|---------|
 | `OLLAMA_HOST` | `http://localhost:11434` | Ollama base URL (chat + embeddings) |
-| Chat / Embedding model | `qwen2.5:latest` / `nomic-embed-text` | Ollama models |
+| Chat / Embedding model | `qwen3:8b` / `nomic-embed-text` | Ollama models |
 | Merge similarity (`SIM_THRESHOLD`) | `0.74` | Cosine threshold to collapse same-topic articles |
 | Lookback (`LOOKBACK_HOURS`) | `36` | How far back fresh items are first discovered |
 | Retention floor / ceiling (`RETAIN_FLOOR`/`RETAIN_CEILING`) | `25` / `60` | Keep at least / at most this many unread stories |
