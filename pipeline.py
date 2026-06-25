@@ -31,7 +31,7 @@ import settings
 # restart; the env values here are the defaults settings.py falls back to.
 # ──────────────────────────────────────────────────────────────────────
 OLLAMA_HOST   = os.environ.get('OLLAMA_HOST', 'http://localhost:11434').rstrip('/')
-OLLAMA_MODEL  = os.environ.get('OLLAMA_MODEL', 'qwen2.5:latest')
+OLLAMA_MODEL  = os.environ.get('OLLAMA_MODEL', 'qwen3:8b')
 EMBED_MODEL   = os.environ.get('EMBED_MODEL', 'nomic-embed-text')
 
 SIM_THRESHOLD = float(os.environ.get('SIM_THRESHOLD', '0.82'))

@@ -130,7 +130,7 @@ def _schema():
     return {
         # ── Models (which Ollama models to use; host/port stay in compose) ─
         'ollama_model': {
-            'type': 'str', 'default': os.environ.get('OLLAMA_MODEL', 'qwen2.5:latest'),
+            'type': 'str', 'default': os.environ.get('OLLAMA_MODEL', 'qwen3:8b'),
             'group': 'models', 'label': 'Chat model',
             'help': 'Ollama model used to score, summarise, and categorise articles.'},
         'embed_model': {
