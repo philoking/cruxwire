@@ -1,5 +1,12 @@
 FROM python:3.12-slim
 
+# tzdata so the scheduler honours TZ (set in compose). Without it the slim
+# image has no zoneinfo and the container runs in UTC, firing runs in the
+# wrong local window.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # App code + bundled assets. Mutable data lives on the /data volume, not here.

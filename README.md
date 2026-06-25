@@ -173,6 +173,7 @@ A few common knobs:
 | Lookback (`LOOKBACK_HOURS`) | `36` | How far back fresh items are first discovered |
 | Retention floor / ceiling (`RETAIN_FLOOR`/`RETAIN_CEILING`) | `25` / `60` | Keep at least / at most this many unread stories |
 | Schedule (`ACTIVE_START_HOUR`/`ACTIVE_END_HOUR`/`INTERVAL_HOURS`) | `6` / `22` / `2` | When runs fire |
+| `TZ` | `America/Los_Angeles` | Timezone the active-hours window is measured in (else UTC) |
 | `PORT` | `8090` | Container HTTP port |
 
 **→ [TUNING.md](TUNING.md) documents every knob**, what it does, how the knobs interact, and recipes

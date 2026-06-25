@@ -16,6 +16,10 @@ services:
       #     OLLAMA_HOST: http://host.docker.internal:11434
       OLLAMA_HOST: ${OLLAMA_HOST:-http://localhost:11434}
       PORT: 8090
+      # Timezone the scheduler uses for the active-hours window. Without this
+      # the container runs in UTC and runs fire in the wrong local window.
+      # Override via .env or your shell, e.g. TZ=America/New_York.
+      TZ: ${TZ:-America/Los_Angeles}
     volumes:
       - cruxwire-data:/data        # local named volume - no NAS share
     env_file:
