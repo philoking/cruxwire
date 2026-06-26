@@ -609,6 +609,7 @@
     .list-time { font-size: 11px; color: var(--text3); margin-top: 2px; }
     .tldr-toggle { color: var(--brand) !important; }
     .tldr-panel { position: relative; margin-top: 11px; padding: 11px 36px 11px 14px; background: var(--surface2); border-radius: 8px; max-width: 620px; }
+    .tldr-read { font-size: 12px; color: var(--text3); font-weight: 600; letter-spacing: .01em; margin: 0 0 9px; }
     .tldr-list { margin: 0; padding-left: 18px; }
     .tldr-list li { font-size: 13px; line-height: 1.5; color: var(--text); margin-bottom: 5px; }
     .tldr-list li:last-child { margin-bottom: 0; }
@@ -1927,6 +1928,7 @@ async function requestTldr(id, url, title) {
     const data = await res.json();
     const bullets = Array.isArray(data.tldr) ? data.tldr : [];
     set({ tldr: bullets, bottomLine: data.bottom_line || '',
+          readMinutes: Number(data.read_minutes) || 0,
           tldrState: (bullets.length || data.bottom_line) ? 'ready' : 'error' });
   } catch (e) {
     set({ tldrState: 'error' });
@@ -1965,7 +1967,10 @@ function tldrPanel(a) {
     `<button class="tldr-regen-icon" onclick="retryTldr('${a.id}')" title="${title}" aria-label="${title}">↻</button>`;
   let inner;
   if (a.tldr && a.tldr.length) {
+    const readMeta = a.readMinutes
+      ? `<p class="tldr-read">≈ ${a.readMinutes} min read</p>` : '';
     inner = regen('Regenerate')
+      + readMeta
       + `<ul class="tldr-list">${a.tldr.map(b => `<li>${escapeAttr(b)}</li>`).join('')}</ul>`
       + (a.bottomLine ? `<p class="tldr-bottom"><span>Bottom line:</span> ${escapeAttr(a.bottomLine)}</p>` : '');
   } else if (a.tldrState === 'pending') {

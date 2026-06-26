@@ -380,15 +380,25 @@ bottom line is one sentence on whether it's worth reading and for whom. Respond 
 ONLY with valid JSON, no markdown."""
 
 
+# Words-per-minute for the reading-time estimate. ~200 wpm is a common average
+# for adult non-fiction reading; the count comes from a crude full-page text
+# extraction (it includes some page chrome), so the figure is approximate.
+READ_WPM = 200
+
+
 def _article_text(url, limit=6000):
-    """Cleaned body text of an article page (more than _fetch_page's excerpt)."""
+    """Cleaned body text of an article page (more than _fetch_page's excerpt),
+    plus a word count of the whole cleaned body for the reading-time estimate.
+    Returns (text, word_count): text is truncated to `limit` for prompting, but
+    word_count reflects the full body (pre-truncation)."""
     html = http_get_text(url, PAGE_TIMEOUT, limit=150000)
     if not html:
-        return ''
+        return '', 0
     body = re.sub(r'<script[\s\S]*?</script>', ' ', html, flags=re.IGNORECASE)
     body = re.sub(r'<style[\s\S]*?</style>', ' ', body, flags=re.IGNORECASE)
     body = re.sub(r'<[^>]+>', ' ', body)
-    return re.sub(r'\s+', ' ', body).strip()[:limit]
+    body = re.sub(r'\s+', ' ', body).strip()
+    return body[:limit], len(body.split())
 
 
 def generate_tldr(url, title, chat_model=None):
@@ -396,7 +406,7 @@ def generate_tldr(url, title, chat_model=None):
     Returns None on failure (Ollama down / nothing usable) so the caller can
     surface a retry."""
     chat_model = chat_model or settings.load()['ollama_model']
-    text = _article_text(url)
+    text, word_count = _article_text(url)
     user_prompt = (
         "Write a TL;DR for someone deciding whether to read this article.\n\n"
         f"Title: {title}\n"
@@ -428,7 +438,12 @@ def generate_tldr(url, title, chat_model=None):
     bottom = str(bottom).strip()[:300] if isinstance(bottom, str) else ''
     if not bullets and not bottom:
         return None
-    return {'tldr': bullets, 'bottom_line': bottom}
+    result = {'tldr': bullets, 'bottom_line': bottom}
+    # Reading-time estimate from the article's word count. Guard against a near-
+    # empty extraction (paywall/failed fetch) producing a bogus "1 min".
+    if word_count >= 50:
+        result['read_minutes'] = max(1, round(word_count / READ_WPM))
+    return result
 
 
 # ──────────────────────────────────────────────────────────────────────
