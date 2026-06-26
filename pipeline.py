@@ -380,25 +380,30 @@ bottom line is one sentence on whether it's worth reading and for whom. Respond 
 ONLY with valid JSON, no markdown."""
 
 
-# Words-per-minute for the reading-time estimate. ~200 wpm is a common average
-# for adult non-fiction reading; the count comes from a crude full-page text
-# extraction (it includes some page chrome), so the figure is approximate.
+# Reading-time estimate. ~200 wpm is a common adult non-fiction average. The
+# count comes from paragraph (<p>) text only, which strips most nav/list/related
+# chrome that whole-page text would wrongly inflate. Pages whose body is rendered
+# client-side (no prose in the static HTML) fall below MIN_PROSE_WORDS, so we omit
+# the estimate rather than show a figure built from page chrome.
 READ_WPM = 200
+MIN_PROSE_WORDS = 200
 
 
 def _article_text(url, limit=6000):
-    """Cleaned body text of an article page (more than _fetch_page's excerpt),
-    plus a word count of the whole cleaned body for the reading-time estimate.
-    Returns (text, word_count): text is truncated to `limit` for prompting, but
-    word_count reflects the full body (pre-truncation)."""
+    """Cleaned page text for the TL;DR prompt, plus a word count of the article
+    prose for the reading-time estimate. Returns (text, prose_words): `text` is
+    the whole cleaned body truncated to `limit` for prompting; `prose_words`
+    counts only <p> text (so it ignores menus/related-links and is ~0 for
+    JS-rendered pages whose article isn't in the static HTML)."""
     html = http_get_text(url, PAGE_TIMEOUT, limit=150000)
     if not html:
         return '', 0
     body = re.sub(r'<script[\s\S]*?</script>', ' ', html, flags=re.IGNORECASE)
     body = re.sub(r'<style[\s\S]*?</style>', ' ', body, flags=re.IGNORECASE)
-    body = re.sub(r'<[^>]+>', ' ', body)
-    body = re.sub(r'\s+', ' ', body).strip()
-    return body[:limit], len(body.split())
+    paras = re.findall(r'<p\b[^>]*>([\s\S]*?)</p>', body, flags=re.IGNORECASE)
+    prose = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', ' '.join(paras))).strip()
+    text = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', body)).strip()[:limit]
+    return text, len(prose.split())
 
 
 def generate_tldr(url, title, chat_model=None):
@@ -406,7 +411,7 @@ def generate_tldr(url, title, chat_model=None):
     Returns None on failure (Ollama down / nothing usable) so the caller can
     surface a retry."""
     chat_model = chat_model or settings.load()['ollama_model']
-    text, word_count = _article_text(url)
+    text, prose_words = _article_text(url)
     user_prompt = (
         "Write a TL;DR for someone deciding whether to read this article.\n\n"
         f"Title: {title}\n"
@@ -439,10 +444,10 @@ def generate_tldr(url, title, chat_model=None):
     if not bullets and not bottom:
         return None
     result = {'tldr': bullets, 'bottom_line': bottom}
-    # Reading-time estimate from the article's word count. Guard against a near-
-    # empty extraction (paywall/failed fetch) producing a bogus "1 min".
-    if word_count >= 50:
-        result['read_minutes'] = max(1, round(word_count / READ_WPM))
+    # Reading-time estimate from article prose. Below the floor we couldn't
+    # extract a real body (JS-rendered/paywalled), so omit rather than mislead.
+    if prose_words >= MIN_PROSE_WORDS:
+        result['read_minutes'] = max(1, round(prose_words / READ_WPM))
     return result
 
 
