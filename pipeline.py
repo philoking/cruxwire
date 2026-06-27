@@ -380,15 +380,44 @@ bottom line is one sentence on whether it's worth reading and for whom. Respond 
 ONLY with valid JSON, no markdown."""
 
 
+# Reading-time estimate. ~200 wpm is a common adult non-fiction average.
+READ_WPM = 200
+MIN_BODY_WORDS = 200   # below this we couldn't extract a real body — omit the estimate
+
+
+def _article_word_count(html):
+    """Best-effort word count of the article body for the reading-time estimate.
+
+    Prefers schema.org JSON-LD (`wordCount`, else `articleBody` text): that
+    structured data carries the real article even on JS-rendered pages where the
+    body lives in a data blob rather than <p> tags (e.g. HackerNoon). Falls back
+    to paragraph text for plain server-rendered pages, and returns 0 when neither
+    yields a real body (so the caller omits the estimate)."""
+    for ld in re.findall(r'<script[^>]*application/ld\+json[^>]*>([\s\S]*?)</script>', html, re.IGNORECASE):
+        m = re.search(r'"wordCount"\s*:\s*(\d+)', ld)
+        if m:
+            return int(m.group(1))
+        bm = re.search(r'"articleBody"\s*:\s*"((?:[^"\\]|\\.)*)"', ld)
+        if bm:
+            return len(re.sub(r'\\[a-z]', ' ', bm.group(1)).split())
+    paras = re.findall(r'<p\b[^>]*>([\s\S]*?)</p>', html, re.IGNORECASE)
+    prose = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', ' '.join(paras))).strip()
+    return len(prose.split())
+
+
 def _article_text(url, limit=6000):
-    """Cleaned body text of an article page (more than _fetch_page's excerpt)."""
-    html = http_get_text(url, PAGE_TIMEOUT, limit=150000)
+    """Cleaned page text for the TL;DR prompt, plus a word count of the article
+    body for the reading-time estimate. Returns (text, word_count): `text` is the
+    whole cleaned body truncated to `limit` for prompting; `word_count` comes from
+    structured data when available (see `_article_word_count`)."""
+    html = http_get_text(url, PAGE_TIMEOUT, limit=300000)
     if not html:
-        return ''
+        return '', 0
+    word_count = _article_word_count(html)
     body = re.sub(r'<script[\s\S]*?</script>', ' ', html, flags=re.IGNORECASE)
     body = re.sub(r'<style[\s\S]*?</style>', ' ', body, flags=re.IGNORECASE)
-    body = re.sub(r'<[^>]+>', ' ', body)
-    return re.sub(r'\s+', ' ', body).strip()[:limit]
+    text = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', body)).strip()[:limit]
+    return text, word_count
 
 
 def generate_tldr(url, title, chat_model=None):
@@ -396,7 +425,7 @@ def generate_tldr(url, title, chat_model=None):
     Returns None on failure (Ollama down / nothing usable) so the caller can
     surface a retry."""
     chat_model = chat_model or settings.load()['ollama_model']
-    text = _article_text(url)
+    text, word_count = _article_text(url)
     user_prompt = (
         "Write a TL;DR for someone deciding whether to read this article.\n\n"
         f"Title: {title}\n"
@@ -428,7 +457,13 @@ def generate_tldr(url, title, chat_model=None):
     bottom = str(bottom).strip()[:300] if isinstance(bottom, str) else ''
     if not bullets and not bottom:
         return None
-    return {'tldr': bullets, 'bottom_line': bottom}
+    result = {'tldr': bullets, 'bottom_line': bottom}
+    # Reading-time estimate from the article's word count. Below the floor we
+    # couldn't extract a real body (paywall/failed fetch), so omit rather than
+    # show a figure built from page chrome.
+    if word_count >= MIN_BODY_WORDS:
+        result['read_minutes'] = max(1, round(word_count / READ_WPM))
+    return result
 
 
 # ──────────────────────────────────────────────────────────────────────
