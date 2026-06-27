@@ -96,6 +96,10 @@
       width: 34px; height: 34px; flex-shrink: 0;
       object-fit: contain; margin-left: -4px;
     }
+    .masthead .brand-link {
+      display: inline-flex; align-items: center; gap: 11px;
+      color: inherit; text-decoration: none; cursor: pointer;
+    }
     .header-right {
       display: flex;
       align-items: center;
@@ -672,7 +676,7 @@
 
   <!-- Header -->
   <header class="header">
-    <div class="masthead"><img class="brand-logo" src="/logo-mark.png" alt="" width="34" height="34">Cruxwire<span id="header-date" style="color:var(--text2);font-weight:500;font-size:14px;font-family:var(--font-body);letter-spacing:0;"></span></div>
+    <div class="masthead"><a class="brand-link" href="#" onclick="switchView('digest'); return false;" aria-label="Cruxwire — home"><img class="brand-logo" src="/logo-mark.png" alt="" width="34" height="34">Cruxwire</a><span id="header-date" style="color:var(--text2);font-weight:500;font-size:14px;font-family:var(--font-body);letter-spacing:0;"></span></div>
     <div class="header-right">
       <div class="header-meta" id="header-count"></div>
       <button class="run-pill" id="run-pill" style="display:none;"></button>
@@ -2925,6 +2929,13 @@ function renderAboutPane() {
     : 'never';
   return [
     renderDeploySection(),
+    `<div class="settings-section">
+      <div class="settings-h">Documentation</div>
+      <div class="settings-help">
+        Full setup and usage docs live at
+        <a class="linklike" href="https://cruxwire.app/documentation.html" target="_blank" rel="noopener">cruxwire.app/documentation.html ↗</a>.
+      </div>
+    </div>`,
     `<div class="settings-section">
       <div class="settings-h">Learning</div>
       <div class="settings-help">
