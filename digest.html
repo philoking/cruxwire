@@ -337,7 +337,9 @@
     .lead { display: flex; flex-direction: column; }
     .lead .thumb { aspect-ratio: 16/9; margin-bottom: 15px; }
     .lead .kicker { margin-bottom: 10px; }
-    .lead-title { font-family: var(--font-head); font-weight: 700; font-size: 31px; line-height: 1.1; letter-spacing: -0.025em; margin-bottom: 11px; }
+    /* Clamp to a few lines so a runaway headline can't blow out the layout;
+       full title is on the element's native hover tooltip (title=""). */
+    .lead-title { font-family: var(--font-head); font-weight: 700; font-size: 31px; line-height: 1.1; letter-spacing: -0.025em; margin-bottom: 11px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
     .lead:hover .lead-title { color: var(--brand); }
     .lead-summary { font-size: 15px; color: var(--text2); line-height: 1.55; max-width: 60ch; margin-bottom: 13px; }
     .lead-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -346,7 +348,7 @@
     .mini { display: grid; grid-template-columns: 116px 1fr; gap: 14px; align-items: start; }
     .mini .thumb { aspect-ratio: 1/1; }
     .mini .kicker { font-size: 10px; margin-bottom: 6px; }
-    .mini-title { font-family: var(--font-head); font-weight: 600; font-size: 15.5px; line-height: 1.2; letter-spacing: -0.015em; margin-bottom: 7px; }
+    .mini-title { font-family: var(--font-head); font-weight: 600; font-size: 15.5px; line-height: 1.2; letter-spacing: -0.015em; margin-bottom: 7px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
     .mini:hover .mini-title { color: var(--brand); }
     .mini-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 
@@ -360,7 +362,7 @@
     .card { display: flex; flex-direction: column; }
     .card .thumb { aspect-ratio: 16/10; margin-bottom: 13px; }
     .card .kicker { margin-bottom: 9px; }
-    .card-title { font-family: var(--font-head); font-weight: 600; font-size: 18.5px; line-height: 1.2; letter-spacing: -0.018em; margin-bottom: 8px; }
+    .card-title { font-family: var(--font-head); font-weight: 600; font-size: 18.5px; line-height: 1.2; letter-spacing: -0.018em; margin-bottom: 8px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
     .card:hover .card-title { color: var(--brand); }
     .card-summary { font-size: 13.5px; color: var(--text2); line-height: 1.5; margin-bottom: 11px; }
     .card-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 2px; }
@@ -1789,7 +1791,7 @@ function renderHero(lead, side) {
     <article class="article-wrap lead" id="wrap-${lead.id}" style="max-height:9999px;">
       ${thumbBlock(lead)}
       ${kicker(lead)}
-      <h2 class="lead-title">${openLink(lead, lead.title)}</h2>
+      <h2 class="lead-title" title="${escapeAttr(lead.title)}">${openLink(lead, lead.title)}</h2>
       ${lead.summary ? `<p class="lead-summary">${lead.summary}</p>` : ''}
       ${clusterDisclosure(lead)}
       <div class="lead-foot">${srcLine(lead)} ${cardActions(lead)}</div>
@@ -1799,7 +1801,7 @@ function renderHero(lead, side) {
       ${thumbBlock(a)}
       <div>
         ${kicker(a)}
-        <h3 class="mini-title">${openLink(a, a.title)}</h3>
+        <h3 class="mini-title" title="${escapeAttr(a.title)}">${openLink(a, a.title)}</h3>
         ${clusterDisclosure(a)}
         <div class="mini-foot">${srcLine(a)} ${cardActions(a)}</div>
       </div>
@@ -1812,7 +1814,7 @@ function gridCardHTML(a) {
     <article class="article-wrap card" id="wrap-${a.id}" style="max-height:9999px;">
       ${thumbBlock(a)}
       ${kicker(a)}
-      <h3 class="card-title">${openLink(a, a.title)}</h3>
+      <h3 class="card-title" title="${escapeAttr(a.title)}">${openLink(a, a.title)}</h3>
       ${a.summary ? `<p class="card-summary">${a.summary}</p>` : ''}
       ${clusterDisclosure(a)}
       <div class="card-foot">${srcLine(a)} ${cardActions(a)}</div>
@@ -1833,7 +1835,7 @@ function savedCardHTML(a) {
     <article class="article-wrap card saved-hit" id="saved-hit-${a.id}" style="max-height:9999px;">
       <a ${link}>${thumb(a)}</a>
       <span class="saved-tag">★ Saved</span>
-      <h3 class="card-title"><a ${link}>${a.title}</a></h3>
+      <h3 class="card-title" title="${escapeAttr(a.title)}"><a ${link}>${a.title}</a></h3>
       ${a.bottomLine ? `<p class="card-summary">${escapeAttr(a.bottomLine)}</p>` : ''}
       <div class="card-foot">${srcLine(a)}</div>
     </article>`;
